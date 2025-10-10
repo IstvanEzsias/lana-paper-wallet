@@ -1,6 +1,7 @@
 export type Language = 'en' | 'sl' | 'hu';
 
 export interface Translations {
+  createWallet: string;
   instructions: {
     title: string;
     text1: string;
@@ -72,6 +73,7 @@ export interface Translations {
 
 export const translations: Record<Language, Translations> = {
   en: {
+    createWallet: 'Create New Wallet',
     instructions: {
       title: 'Instructions',
       text1: 'This website is designed to help you generate QR codes from your LanaCoin private keys and print them for secure offline storage.',
@@ -141,6 +143,7 @@ export const translations: Record<Language, Translations> = {
     },
   },
   sl: {
+    createWallet: 'Ustvari novo denarnico',
     instructions: {
       title: 'Navodila',
       text1: 'Ta spletna stran je namenjena generiranju QR kod iz vaših LanaCoin zasebnih ključev in njihovemu tiskanju za varno shranjevanje brez povezave.',
@@ -210,6 +213,7 @@ export const translations: Record<Language, Translations> = {
     },
   },
   hu: {
+    createWallet: 'Új tárca létrehozása',
     instructions: {
       title: 'Utasítások',
       text1: 'Ez a weboldal arra szolgál, hogy QR kódokat generáljon LanaCoin privát kulcsaiból és kinyomtassa őket biztonságos offline tárolás céljából.',

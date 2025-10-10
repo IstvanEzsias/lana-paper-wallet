@@ -156,6 +156,25 @@ const WalletConverter = () => {
         <LanguageSelector />
       </div>
 
+      {/* Create New Wallet Button */}
+      <div className="flex justify-center">
+        <Button 
+          variant="hero"
+          size="lg"
+          asChild
+        >
+          <a 
+            href="https://www.offlinelana.org" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="gap-2"
+          >
+            <Wallet className="h-5 w-5" />
+            {t.createWallet}
+          </a>
+        </Button>
+      </div>
+
       {/* Instructions */}
       <Card className="bg-gradient-card border-border shadow-glow">
         <CardHeader>
