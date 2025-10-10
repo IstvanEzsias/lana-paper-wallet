@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import React, { useRef, ChangeEvent } from 'react';
+import jsQR from 'jsqr';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Camera, X } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 
 interface QRScannerProps {
   onScan: (decodedText: string) => void;
@@ -10,115 +9,91 @@ interface QRScannerProps {
 }
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScan, onError }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-  const qrCodeRegionId = "qr-reader";
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const startScanner = async () => {
+  const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
     try {
-      setIsScanning(true);
+      // Read the image file
+      const imageDataUrl = await readFileAsDataURL(file);
       
-      const html5QrCode = new Html5Qrcode(qrCodeRegionId);
-      scannerRef.current = html5QrCode;
+      // Create an image element
+      const img = new Image();
+      img.src = imageDataUrl;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
 
-      const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-      };
+      // Create a canvas and draw the image
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Could not get canvas context');
+      }
 
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        config,
-        (decodedText) => {
-          onScan(decodedText);
-          stopScanner();
-          setIsOpen(false);
-        },
-        (errorMessage) => {
-          // Ignore frame processing errors
-          if (!errorMessage.includes("NotFoundException")) {
-            console.warn(errorMessage);
-          }
-        }
-      );
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      // Get image data
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Decode QR code
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code) {
+        onScan(code.data);
+      } else {
+        onError?.('No QR code found in the image. Please try a clearer image.');
+      }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to start camera';
-      console.error('QR Scanner error:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Failed to read QR code';
       onError?.(errorMsg);
-      setIsScanning(false);
-    }
-  };
-
-  const stopScanner = async () => {
-    if (scannerRef.current?.isScanning) {
-      try {
-        await scannerRef.current.stop();
-        scannerRef.current.clear();
-      } catch (err) {
-        console.error('Error stopping scanner:', err);
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
-    setIsScanning(false);
-    scannerRef.current = null;
   };
 
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (open) {
-      startScanner();
-    } else {
-      stopScanner();
-    }
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
-  useEffect(() => {
-    return () => {
-      stopScanner();
-    };
-  }, []);
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+        aria-label="Upload QR code image"
+      />
       <Button
         type="button"
         variant="outline"
         size="icon"
-        onClick={() => handleOpenChange(true)}
-        className="shrink-0"
+        onClick={handleButtonClick}
+        title="Upload QR code image"
       >
-        <Camera className="h-4 w-4" />
+        <QrCode className="h-4 w-4" />
       </Button>
-
-      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Camera className="h-5 w-5" />
-              Scan QR Code
-            </DialogTitle>
-            <DialogDescription>
-              Position the QR code within the camera frame to scan your private key
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="relative bg-muted rounded-lg overflow-hidden">
-              <div id={qrCodeRegionId} className="w-full" />
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleOpenChange(false)}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
