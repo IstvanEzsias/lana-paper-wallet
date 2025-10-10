@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,13 +11,13 @@ import { useToast } from '@/hooks/use-toast';
 import QRScanner from '@/components/QRScanner';
 
 const WalletConverter = () => {
-  const [wifInput, setWifInput] = useState('');
-  const [result, setResult] = useState<ConversionResult | null>(null);
-  const [isConverting, setIsConverting] = useState(false);
-  const [error, setError] = useState('');
-  const [isValidInput, setIsValidInput] = useState<boolean | null>(null);
-  const [showQRScanner, setShowQRScanner] = useState(false);
-  const [showNostrData, setShowNostrData] = useState(false);
+  const [wifInput, setWifInput] = React.useState('');
+  const [result, setResult] = React.useState<ConversionResult | null>(null);
+  const [isConverting, setIsConverting] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [isValidInput, setIsValidInput] = React.useState<boolean | null>(null);
+  const [showQRScanner, setShowQRScanner] = React.useState(false);
+  const [showNostrData, setShowNostrData] = React.useState(false);
   const { toast } = useToast();
 
   const handleConvert = async () => {
@@ -76,7 +76,7 @@ const WalletConverter = () => {
   };
 
   // Validate WIF input async
-  useEffect(() => {
+  React.useEffect(() => {
     const validateInput = async () => {
       if (!wifInput.trim()) {
         setIsValidInput(null);
