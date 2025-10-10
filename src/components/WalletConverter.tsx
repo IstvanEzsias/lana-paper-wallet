@@ -5,10 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine } from 'lucide-react';
+import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
-import QRScanner from '@/components/QRScanner';
 
 const WalletConverter = () => {
   const [wifInput, setWifInput] = useState('');
@@ -16,7 +15,6 @@ const WalletConverter = () => {
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState('');
   const [isValidInput, setIsValidInput] = useState<boolean | null>(null);
-  const [showQRScanner, setShowQRScanner] = useState(false);
   const { toast } = useToast();
 
   const handleConvert = async () => {
@@ -63,15 +61,6 @@ const WalletConverter = () => {
         description: "Could not copy to clipboard",
       });
     }
-  };
-
-  const handleQRScan = (data: string) => {
-    setWifInput(data);
-    setShowQRScanner(false);
-    toast({
-      title: "QR koda skenirana",
-      description: "Privatni ključ je bil prebran iz QR kode",
-    });
   };
 
   // Validate WIF input async
@@ -125,37 +114,27 @@ const WalletConverter = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="wif-input">WIF Private Key</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="wif-input"
-                  type="text"
-                  placeholder="e.g., 6vNKUjypr3h3gPWSaa9TU9s3mgDujuaeZtAi63vHq7wGZqH3iH3"
-                  value={wifInput}
-                  onChange={(e) => setWifInput(e.target.value)}
-                  className={`pr-12 ${
-                    isValidInput === false ? 'border-destructive' : 
-                    isValidInput === true ? 'border-success' : 'border-input'
-                  }`}
-                />
-                {isValidInput !== null && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {isValidInput ? (
-                      <CheckCircle2 className="h-4 w-4 text-success" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
-                    )}
-                  </div>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowQRScanner(true)}
-                title="Skeniraj QR kodo"
-              >
-                <ScanLine className="h-4 w-4" />
-              </Button>
+            <div className="relative">
+              <Input
+                id="wif-input"
+                type="text"
+                placeholder="e.g., 6vNKUjypr3h3gPWSaa9TU9s3mgDujuaeZtAi63vHq7wGZqH3iH3"
+                value={wifInput}
+                onChange={(e) => setWifInput(e.target.value)}
+                className={`pr-12 ${
+                  isValidInput === false ? 'border-destructive' : 
+                  isValidInput === true ? 'border-success' : 'border-input'
+                }`}
+              />
+              {isValidInput !== null && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isValidInput ? (
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </div>
+              )}
             </div>
             {isValidInput === false && (
               <p className="text-sm text-destructive">
@@ -333,20 +312,6 @@ const WalletConverter = () => {
           </p>
         </CardContent>
       </Card>
-
-      {/* QR Scanner Modal */}
-      {showQRScanner && (
-        <>
-          <div 
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-            onClick={() => setShowQRScanner(false)}
-          />
-          <QRScanner
-            onScan={handleQRScan}
-            onClose={() => setShowQRScanner(false)}
-          />
-        </>
-      )}
     </div>
   );
 };
