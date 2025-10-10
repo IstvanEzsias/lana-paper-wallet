@@ -17,19 +17,19 @@ interface WalletCardProps {
 
 const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue }) => {
   return (
-    <div className="wallet-card bg-white text-black p-6 break-inside-avoid border-2 border-gray-300 rounded-lg mb-4">
-      <div className="text-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+    <div className="wallet-card bg-white text-black p-4 break-inside-avoid border-2 border-gray-300 rounded-lg mb-3">
+      <div className="text-center mb-3">
+        <h2 className="text-lg font-bold text-gray-800">{title}</h2>
       </div>
 
-      <div className="mb-4">
-        <p className="text-xs font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
+      <div className="mb-3">
+        <p className="text-[10px] font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
       </div>
 
-      <div className="flex justify-center pt-2">
+      <div className="flex justify-center pt-1">
         <div className="text-center">
           <div className="border-2 border-gray-800 p-2 inline-block bg-white">
-            <QRCodeSVG value={qrValue} size={120} level="H" />
+            <QRCodeSVG value={qrValue} size={100} level="H" />
           </div>
         </div>
       </div>
@@ -140,6 +140,23 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
           margin: 0 auto;
         }
         
+        .cards-container.two-column {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 5mm;
+          max-width: 180mm;
+          margin: 0 auto;
+          align-items: start;
+        }
+        
+        .cards-container.single-column {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          max-width: 90mm;
+          margin: 0 auto;
+        }
+        
         @media screen {
           .print-document {
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -153,7 +170,7 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
         </div>
       )}
 
-      <div className="cards-container">
+      <div className={`cards-container ${showNostrData ? 'two-column' : 'single-column'}`}>
         {cards.map((card, index) => (
           <WalletCard
             key={index}
