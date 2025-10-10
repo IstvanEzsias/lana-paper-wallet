@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
-import QRScanner from './QRScanner';
 
 const WalletConverter = () => {
   const [wifInput, setWifInput] = useState('');
@@ -64,22 +63,6 @@ const WalletConverter = () => {
     }
   };
 
-  const handleQRScan = (decodedText: string) => {
-    setWifInput(decodedText);
-    toast({
-      title: "QR Code Scanned",
-      description: "Private key loaded from QR code",
-    });
-  };
-
-  const handleQRError = (error: string) => {
-    toast({
-      variant: "destructive",
-      title: "Scanner Error",
-      description: error,
-    });
-  };
-
   // Validate WIF input async
   useEffect(() => {
     const validateInput = async () => {
@@ -131,30 +114,27 @@ const WalletConverter = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="wif-input">WIF Private Key</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="wif-input"
-                  type="text"
-                  placeholder="e.g., 6vNKUjypr3h3gPWSaa9TU9s3mgDujuaeZtAi63vHq7wGZqH3iH3"
-                  value={wifInput}
-                  onChange={(e) => setWifInput(e.target.value)}
-                  className={`pr-12 ${
-                    isValidInput === false ? 'border-destructive' : 
-                    isValidInput === true ? 'border-success' : 'border-input'
-                  }`}
-                />
-                {isValidInput !== null && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {isValidInput ? (
-                      <CheckCircle2 className="h-4 w-4 text-success" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
-                    )}
-                  </div>
-                )}
-              </div>
-              <QRScanner onScan={handleQRScan} onError={handleQRError} />
+            <div className="relative">
+              <Input
+                id="wif-input"
+                type="text"
+                placeholder="e.g., 6vNKUjypr3h3gPWSaa9TU9s3mgDujuaeZtAi63vHq7wGZqH3iH3"
+                value={wifInput}
+                onChange={(e) => setWifInput(e.target.value)}
+                className={`pr-12 ${
+                  isValidInput === false ? 'border-destructive' : 
+                  isValidInput === true ? 'border-success' : 'border-input'
+                }`}
+              />
+              {isValidInput !== null && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isValidInput ? (
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </div>
+              )}
             </div>
             {isValidInput === false && (
               <p className="text-sm text-destructive">
