@@ -147,20 +147,6 @@ const WalletConverter = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-3 p-6 bg-gradient-card rounded-2xl border shadow-glow">
-          <Key className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              LanaCoin Key Converter
-            </h1>
-            <p className="text-muted-foreground">
-              Convert WIF private keys to Wallet ID and Nostr identifiers
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Input Section */}
       <Card className="bg-gradient-card border-border shadow-primary">
@@ -489,26 +475,6 @@ const WalletConverter = () => {
         </div>
       )}
 
-      {/* Technical Info */}
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Technical Implementation</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>
-            <strong>Cryptographic Process:</strong> Uses secp256k1 elliptic curve with SHA256+RIPEMD160 
-            hashing for wallet addresses and x-only public keys for Nostr compatibility.
-          </p>
-          <p>
-            <strong>Security:</strong> All operations are performed client-side. Private keys are never 
-            transmitted or stored.
-          </p>
-          <p>
-            <strong>Compatibility:</strong> Generated Wallet IDs use LanaCoin version byte (0x30) and 
-            Nostr IDs follow NIP-19 bech32 encoding standards.
-          </p>
-        </CardContent>
-      </Card>
 
       {/* QR Scanner Modal */}
       {showQRScanner && (
