@@ -1,12 +1,14 @@
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { type ConversionResult } from '@/lib/crypto';
+import { translations, type Language } from '@/lib/translations';
 
 interface PrintDocumentProps {
   customText: string;
   result: ConversionResult;
   wifInput: string;
   showNostrData: boolean;
+  language: Language;
 }
 
 interface WalletCardProps {
@@ -44,43 +46,45 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
   customText, 
   result, 
   wifInput, 
-  showNostrData 
+  showNostrData,
+  language 
 }) => {
+  const t = translations[language].printDoc;
   const cards = showNostrData ? [
     {
-      title: "LANA Private Key (WIF)",
+      title: t.lanaPrivateKey,
       value: wifInput,
       qrValue: wifInput
     },
     {
-      title: "LanaCoin Wallet ID",
+      title: t.walletId,
       value: result.walletId,
       qrValue: result.walletId
     },
     {
-      title: "Nostr HEX ID",
+      title: t.nostrHexId,
       value: result.nostrHexId,
       qrValue: result.nostrHexId
     },
     {
-      title: "Nostr npub ID",
+      title: t.nostrNpubId,
       value: result.nostrNpubId,
       qrValue: result.nostrNpubId,
       hideValue: true
     },
     {
-      title: "Nostr Private Key (HEX)",
+      title: t.nostrPrivateKeyHex,
       value: result.privateKeyHex,
       qrValue: result.privateKeyHex
     }
   ] : [
     {
-      title: "LANA Private Key (WIF)",
+      title: t.lanaPrivateKey,
       value: wifInput,
       qrValue: wifInput
     },
     {
-      title: "LanaCoin Wallet ID",
+      title: t.walletId,
       value: result.walletId,
       qrValue: result.walletId
     }
@@ -169,7 +173,7 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
       `}</style>
 
       <div className="custom-header">
-        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>LANA Wallet</div>
+        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>{t.walletTitle}</div>
         {customText && <div>{customText}</div>}
       </div>
 
@@ -187,11 +191,9 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
 
       {!showNostrData && (
         <div className="security-warning">
-          <p className="font-bold text-base mb-2">⚠️ IMPORTANT SECURITY NOTICE ⚠️</p>
+          <p className="font-bold text-base mb-2">{t.securityWarningTitle}</p>
           <p className="text-xs">
-            Store this document securely in THREE separate locations. Keep it away from moisture, 
-            fire, and unauthorized access. Anyone with access to the Private Key can access your funds. 
-            Never share your private key with anyone.
+            {t.securityWarningText}
           </p>
         </div>
       )}

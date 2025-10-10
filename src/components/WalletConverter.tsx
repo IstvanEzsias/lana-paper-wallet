@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Printer } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import QRScanner from '@/components/QRScanner';
 import PrintDocument from '@/components/PrintDocument';
 
@@ -24,10 +26,11 @@ const WalletConverter = () => {
   const [showNostrData, setShowNostrData] = React.useState(false);
   const [customText, setCustomText] = React.useState('');
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   const handleConvert = async () => {
     if (!wifInput.trim()) {
-      setError('Please enter a WIF private key');
+      setError(t.errors.enterWif);
       return;
     }
 
@@ -39,15 +42,15 @@ const WalletConverter = () => {
       const conversionResult = await convertWifToIds(wifInput.trim());
       setResult(conversionResult);
       toast({
-        title: "Conversion Successful",
-        description: "Your WIF has been converted to Wallet ID and Nostr identifiers.",
+        title: t.toasts.conversionSuccess,
+        description: t.toasts.conversionSuccessDesc,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Conversion failed';
       setError(errorMessage);
       toast({
         variant: "destructive",
-        title: "Conversion Failed",
+        title: t.toasts.conversionFailed,
         description: errorMessage,
       });
     } finally {
@@ -59,14 +62,14 @@ const WalletConverter = () => {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: "Copied!",
-        description: `${label} copied to clipboard`,
+        title: t.toasts.copied,
+        description: `${label} ${t.toasts.copiedDesc}`,
       });
     } catch (err) {
       toast({
         variant: "destructive",
-        title: "Copy Failed",
-        description: "Could not copy to clipboard",
+        title: t.toasts.copyFailed,
+        description: t.toasts.copyFailedDesc,
       });
     }
   };
@@ -75,8 +78,8 @@ const WalletConverter = () => {
     setWifInput(data);
     setShowQRScanner(false);
     toast({
-      title: "QR Code Scanned",
-      description: "Private key has been read from QR code",
+      title: t.toasts.qrScanned,
+      description: t.toasts.qrScannedDesc,
     });
   };
 
@@ -87,8 +90,8 @@ const WalletConverter = () => {
     if (!printWindow) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Cannot open print window. Check your browser settings.",
+        title: t.toasts.printError,
+        description: t.toasts.printErrorDesc,
       });
       return;
     }
@@ -116,6 +119,7 @@ const WalletConverter = () => {
           result={result}
           wifInput={wifInput}
           showNostrData={showNostrData}
+          language={language}
         />
       );
 
@@ -147,23 +151,22 @@ const WalletConverter = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Language Selector */}
+      <div className="flex justify-end">
+        <LanguageSelector />
+      </div>
+
       {/* Instructions */}
       <Card className="bg-gradient-card border-border shadow-glow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-primary">
             <Info className="h-5 w-5" />
-            Instructions
+            {t.instructions.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>
-            This website is designed to help you generate QR codes from your LanaCoin private keys 
-            and print them for secure offline storage.
-          </p>
-          <p>
-            Enter your WIF private key below, generate the conversion, and then print the document 
-            to store your wallet information safely in multiple secure locations.
-          </p>
+          <p>{t.instructions.text1}</p>
+          <p>{t.instructions.text2}</p>
         </CardContent>
       </Card>
 
@@ -172,21 +175,21 @@ const WalletConverter = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            WIF Private Key Input
+            {t.input.title}
           </CardTitle>
           <CardDescription>
-            Enter your LanaCoin WIF (Wallet Import Format) private key to convert it
+            {t.input.description}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="wif-input">WIF Private Key</Label>
+            <Label htmlFor="wif-input">{t.input.label}</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
                   id="wif-input"
                   type="text"
-                  placeholder="e.g., 6vNKUjypr3h3gPWSaa9TU9s3mgDujuaeZtAi63vHq7wGZqH3iH3"
+                  placeholder={t.input.placeholder}
                   value={wifInput}
                   onChange={(e) => setWifInput(e.target.value)}
                   className={`pr-12 ${
@@ -208,14 +211,14 @@ const WalletConverter = () => {
                 variant="outline"
                 size="icon"
                 onClick={() => setShowQRScanner(true)}
-                title="Scan QR Code"
+                title={t.input.scanButton}
               >
                 <ScanLine className="h-4 w-4" />
               </Button>
             </div>
             {isValidInput === false && (
               <p className="text-sm text-destructive">
-                Invalid WIF format. Please check your input.
+                {t.input.invalidFormat}
               </p>
             )}
           </div>
@@ -234,14 +237,12 @@ const WalletConverter = () => {
                   htmlFor="show-nostr" 
                   className="text-sm font-medium leading-none cursor-pointer"
                 >
-                  Show NOSTR data
+                  {t.input.showNostr}
                 </Label>
                 <p className="text-xs text-muted-foreground flex items-start gap-1">
                   <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
                   <span>
-                    You will only need NOSTR data if you have an account on other NOSTR platforms. 
-                    Otherwise, only the LANA Private Key is sufficient, from which you can always 
-                    derive NOSTR data later.
+                    {t.input.nostrInfo}
                   </span>
                 </p>
               </div>
@@ -258,12 +259,12 @@ const WalletConverter = () => {
             {isConverting ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
-                Converting...
+                {t.input.converting}
               </>
             ) : (
               <>
                 <Hash className="h-4 w-4" />
-                Convert to IDs
+                {t.input.convertButton}
               </>
             )}
           </Button>
@@ -283,7 +284,7 @@ const WalletConverter = () => {
           <div className="text-center">
             <Badge variant="outline" className="bg-success/10 text-success border-success">
               <CheckCircle2 className="h-3 w-3 mr-1" />
-              Conversion Complete
+              {t.results.complete}
             </Badge>
           </div>
 
@@ -292,10 +293,10 @@ const WalletConverter = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-crypto">
                 <Key className="h-5 w-5" />
-                LANA Private Key (WIF)
+                {t.results.lanaPrivateKey}
               </CardTitle>
               <CardDescription>
-                Your original LanaCoin private key in WIF format
+                {t.results.lanaPrivateKeyDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -306,7 +307,7 @@ const WalletConverter = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => copyToClipboard(wifInput, 'LANA Private Key')}
+                  onClick={() => copyToClipboard(wifInput, t.results.lanaPrivateKey)}
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -322,10 +323,10 @@ const WalletConverter = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-crypto">
                 <Wallet className="h-5 w-5" />
-                LanaCoin Wallet ID
+                {t.results.walletId}
               </CardTitle>
               <CardDescription>
-                Your LanaCoin wallet address derived from the private key
+                {t.results.walletIdDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -336,7 +337,7 @@ const WalletConverter = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => copyToClipboard(result.walletId, 'Wallet ID')}
+                  onClick={() => copyToClipboard(result.walletId, t.results.walletId)}
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -355,10 +356,10 @@ const WalletConverter = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-primary">
                     <Hash className="h-5 w-5" />
-                    Nostr HEX ID
+                    {t.results.nostrHexId}
                   </CardTitle>
                   <CardDescription>
-                    32-byte hexadecimal Nostr public key identifier
+                    {t.results.nostrHexIdDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -369,7 +370,7 @@ const WalletConverter = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => copyToClipboard(result.nostrHexId, 'Nostr HEX ID')}
+                      onClick={() => copyToClipboard(result.nostrHexId, t.results.nostrHexId)}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -385,10 +386,10 @@ const WalletConverter = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-primary">
                     <Key className="h-5 w-5" />
-                    Nostr npub ID
+                    {t.results.nostrNpubId}
                   </CardTitle>
                   <CardDescription>
-                    Human-readable bech32-encoded Nostr public key (npub format)
+                    {t.results.nostrNpubIdDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -399,7 +400,7 @@ const WalletConverter = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => copyToClipboard(result.nostrNpubId, 'Nostr npub ID')}
+                      onClick={() => copyToClipboard(result.nostrNpubId, t.results.nostrNpubId)}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -415,10 +416,10 @@ const WalletConverter = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-primary">
                     <Key className="h-5 w-5" />
-                    Nostr Private Key (HEX)
+                    {t.results.nostrPrivateKey}
                   </CardTitle>
                   <CardDescription>
-                    32-byte hexadecimal Nostr private key for signing
+                    {t.results.nostrPrivateKeyDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -429,7 +430,7 @@ const WalletConverter = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => copyToClipboard(result.privateKeyHex, 'Nostr Private Key')}
+                      onClick={() => copyToClipboard(result.privateKeyHex, t.results.nostrPrivateKey)}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -447,18 +448,18 @@ const WalletConverter = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
                 <Printer className="h-5 w-5" />
-                Generate Print Document
+                {t.print.title}
               </CardTitle>
               <CardDescription>
-                Create an A4 document with wallets and QR codes for secure storage
+                {t.print.description}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="custom-text">Text at the top (optional)</Label>
+                <Label htmlFor="custom-text">{t.print.customTextLabel}</Label>
                 <Textarea
                   id="custom-text"
-                  placeholder="e.g. 100 Million Fun"
+                  placeholder={t.print.customTextPlaceholder}
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
                   rows={3}
@@ -468,8 +469,8 @@ const WalletConverter = () => {
 
               <p className="text-sm text-muted-foreground">
                 {showNostrData 
-                  ? "The document will contain 5 cards: LANA Private Key, Wallet ID and 3 NOSTR data fields"
-                  : "The document will contain 2 cards: LANA Private Key and Wallet ID"}
+                  ? t.print.fiveCards
+                  : t.print.twoCards}
               </p>
 
               <Button 
@@ -479,14 +480,13 @@ const WalletConverter = () => {
                 className="w-full"
               >
                 <Printer className="h-4 w-4 mr-2" />
-                Generate Print Document
+                {t.print.generateButton}
               </Button>
 
               <Alert className="bg-amber-50 border-amber-200">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  <strong>IMPORTANT SECURITY NOTICE:</strong> Store this document securely in THREE separate locations. 
-                  Keep it away from moisture, fire, and unauthorized access. Anyone with access to the Private Key can access your funds.
+                  <strong>{t.print.securityNotice}</strong> {t.print.securityText}
                 </AlertDescription>
               </Alert>
             </CardContent>
