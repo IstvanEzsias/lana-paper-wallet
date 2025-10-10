@@ -29,7 +29,7 @@ const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue }) => {
       <div className="flex justify-center pt-1">
         <div className="text-center">
           <div className="border-2 border-gray-800 p-2 inline-block bg-white">
-            <QRCodeSVG value={qrValue} size={100} level="H" />
+            <QRCodeSVG value={qrValue} size={150} level="H" />
           </div>
         </div>
       </div>
@@ -125,8 +125,8 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
         .security-warning {
           margin-top: 8mm;
           padding: 4mm;
-          background-color: #fff3cd;
-          border: 2px solid #ffc107;
+          background-color: #f5f5f5;
+          border: 2px solid #333;
           border-radius: 4px;
           text-align: center;
           color: #000;
@@ -164,11 +164,10 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
         }
       `}</style>
 
-      {customText && (
-        <div className="custom-header">
-          {customText}
-        </div>
-      )}
+      <div className="custom-header">
+        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>LANA Wallet</div>
+        {customText && <div>{customText}</div>}
+      </div>
 
       <div className={`cards-container ${showNostrData ? 'two-column' : 'single-column'}`}>
         {cards.map((card, index) => (
