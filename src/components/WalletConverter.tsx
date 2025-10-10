@@ -150,13 +150,11 @@ const WalletConverter = () => {
   }, [wifInput]);
 
   return (
-    <div className="flex w-full max-w-7xl mx-auto gap-6">
-      {/* Main Content */}
-      <div className="flex-1 space-y-6">
-        {/* Language Selector */}
-        <div className="flex justify-end">
-          <LanguageSelector />
-        </div>
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Language Selector */}
+      <div className="flex justify-end">
+        <LanguageSelector />
+      </div>
 
       {/* Instructions */}
       <Card className="bg-gradient-card border-border shadow-glow">
@@ -497,70 +495,19 @@ const WalletConverter = () => {
       )}
 
 
-        {/* QR Scanner Modal */}
-        {showQRScanner && (
-          <>
-            <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-              onClick={() => setShowQRScanner(false)}
-            />
-            <QRScanner
-              onScan={handleQRScan}
-              onClose={() => setShowQRScanner(false)}
-            />
-          </>
-        )}
-      </div>
-
-      {/* Right Sidebar Menu */}
-      <aside className="w-64 space-y-4 sticky top-6 self-start">
-        <Card className="bg-gradient-card border-border shadow-primary">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{t.input.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              asChild
-            >
-              <a href="https://www.offlineLana.org" target="_blank" rel="noopener noreferrer">
-                {t.menu.createWallet}
-              </a>
-            </Button>
-            
-            <Button
-              onClick={handleConvert}
-              disabled={isConverting || !isValidInput}
-              variant="hero"
-              className="w-full justify-start"
-            >
-              {t.input.convertButton}
-            </Button>
-            
-            {result && (
-              <Button
-                onClick={handlePrint}
-                variant="outline"
-                className="w-full justify-start"
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                {t.print.generateButton}
-              </Button>
-            )}
-            
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              asChild
-            >
-              <a href="https://lanaregistrar.com" target="_blank" rel="noopener noreferrer">
-                {t.menu.connectRegistrar}
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
-      </aside>
+      {/* QR Scanner Modal */}
+      {showQRScanner && (
+        <>
+          <div 
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+            onClick={() => setShowQRScanner(false)}
+          />
+          <QRScanner
+            onScan={handleQRScan}
+            onClose={() => setShowQRScanner(false)}
+          />
+        </>
+      )}
     </div>
   );
 };
