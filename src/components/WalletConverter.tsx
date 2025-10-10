@@ -75,8 +75,8 @@ const WalletConverter = () => {
     setWifInput(data);
     setShowQRScanner(false);
     toast({
-      title: "QR koda skenirana",
-      description: "Privatni ključ je bil prebran iz QR kode",
+      title: "QR Code Scanned",
+      description: "Private key has been read from QR code",
     });
   };
 
@@ -87,8 +87,8 @@ const WalletConverter = () => {
     if (!printWindow) {
       toast({
         variant: "destructive",
-        title: "Napaka",
-        description: "Ni mogoče odpreti tiskalnega okna. Preverite nastavitve brskalnika.",
+        title: "Error",
+        description: "Cannot open print window. Check your browser settings.",
       });
       return;
     }
@@ -203,7 +203,7 @@ const WalletConverter = () => {
                 variant="outline"
                 size="icon"
                 onClick={() => setShowQRScanner(true)}
-                title="Skeniraj QR kodo"
+                title="Scan QR Code"
               >
                 <ScanLine className="h-4 w-4" />
               </Button>
@@ -229,14 +229,14 @@ const WalletConverter = () => {
                   htmlFor="show-nostr" 
                   className="text-sm font-medium leading-none cursor-pointer"
                 >
-                  Prikaži tudi NOSTR podatke
+                  Show NOSTR data
                 </Label>
                 <p className="text-xs text-muted-foreground flex items-start gap-1">
                   <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
                   <span>
-                    NOSTR podatke boste potrebovali samo, če imate račun tudi na drugih NOSTR platformah. 
-                    V nasprotnem primeru zadostuje samo LANA Private Key, iz katerega lahko vedno pozneje 
-                    izpeljete še NOSTR podatke.
+                    You will only need NOSTR data if you have an account on other NOSTR platforms. 
+                    Otherwise, only the LANA Private Key is sufficient, from which you can always 
+                    derive NOSTR data later.
                   </span>
                 </p>
               </div>
@@ -442,18 +442,18 @@ const WalletConverter = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
                 <Printer className="h-5 w-5" />
-                Generiraj dokument za tisk
+                Generate Print Document
               </CardTitle>
               <CardDescription>
-                Ustvari dokument A4 z denarnicami in QR kodami za varno shranjevanje
+                Create an A4 document with wallets and QR codes for secure storage
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="custom-text">Besedilo na vrhu (opcijsko)</Label>
+                <Label htmlFor="custom-text">Text at the top (optional)</Label>
                 <Textarea
                   id="custom-text"
-                  placeholder="npr. 100 Million Fun"
+                  placeholder="e.g. 100 Million Fun"
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
                   rows={3}
@@ -463,8 +463,8 @@ const WalletConverter = () => {
 
               <p className="text-sm text-muted-foreground">
                 {showNostrData 
-                  ? "Dokument bo vseboval 5 kartic: LANA Private Key, Wallet ID in 3 NOSTR podatke"
-                  : "Dokument bo vseboval 2 kartici: LANA Private Key in Wallet ID"}
+                  ? "The document will contain 5 cards: LANA Private Key, Wallet ID and 3 NOSTR data fields"
+                  : "The document will contain 2 cards: LANA Private Key and Wallet ID"}
               </p>
 
               <Button 
@@ -474,7 +474,7 @@ const WalletConverter = () => {
                 className="w-full"
               >
                 <Printer className="h-4 w-4 mr-2" />
-                Generiraj dokument za tisk
+                Generate Print Document
               </Button>
 
               <Alert className="bg-amber-50 border-amber-200">
