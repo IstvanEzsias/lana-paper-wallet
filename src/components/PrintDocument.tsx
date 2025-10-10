@@ -13,18 +13,21 @@ interface WalletCardProps {
   title: string;
   value: string;
   qrValue: string;
+  hideValue?: boolean;
 }
 
-const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue }) => {
+const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue, hideValue = false }) => {
   return (
     <div className="wallet-card bg-white text-black p-4 break-inside-avoid border-2 border-gray-300 rounded-lg mb-3">
       <div className="mb-3">
         <h2 className="text-lg font-bold text-gray-800 text-left">{title}</h2>
       </div>
 
-      <div className="mb-3">
-        <p className="text-[10px] font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
-      </div>
+      {!hideValue && (
+        <div className="mb-3">
+          <p className="text-[10px] font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
+        </div>
+      )}
 
       <div className="flex justify-center pt-1">
         <div className="text-center">
@@ -62,7 +65,8 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
     {
       title: "Nostr npub ID",
       value: result.nostrNpubId,
-      qrValue: result.nostrNpubId
+      qrValue: result.nostrNpubId,
+      hideValue: true
     },
     {
       title: "Nostr Private Key (HEX)",
@@ -176,6 +180,7 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
             title={card.title}
             value={card.value}
             qrValue={card.qrValue}
+            hideValue={card.hideValue}
           />
         ))}
       </div>
