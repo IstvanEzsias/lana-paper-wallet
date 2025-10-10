@@ -23,7 +23,7 @@ const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue }) => {
       </div>
 
       <div className="mb-3">
-        <p className="text-[10px] font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
+        <p className="text-[10px] font-mono break-all border-b-2 border-gray-400 pb-2 text-center">{value}</p>
       </div>
 
       <div className="flex justify-center pt-1">
