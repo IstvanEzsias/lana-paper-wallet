@@ -1,4 +1,5 @@
 import * as React from 'react';
+import ReactDOM from 'react-dom/client';
 import { QRCodeSVG } from 'qrcode.react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,10 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Printer } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import QRScanner from '@/components/QRScanner';
+import PrintDocument from '@/components/PrintDocument';
 
 const WalletConverter = () => {
   const [wifInput, setWifInput] = React.useState('');
@@ -19,6 +23,8 @@ const WalletConverter = () => {
   const [isValidInput, setIsValidInput] = React.useState<boolean | null>(null);
   const [showQRScanner, setShowQRScanner] = React.useState(false);
   const [showNostrData, setShowNostrData] = React.useState(false);
+  const [customText, setCustomText] = React.useState('');
+  const [walletsPerPage, setWalletsPerPage] = React.useState('2');
   const { toast } = useToast();
 
   const handleConvert = async () => {
@@ -74,6 +80,51 @@ const WalletConverter = () => {
       title: "QR koda skenirana",
       description: "Privatni ključ je bil prebran iz QR kode",
     });
+  };
+
+  const handlePrint = () => {
+    if (!result) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        variant: "destructive",
+        title: "Napaka",
+        description: "Ni mogoče odpreti tiskalnega okna. Preverite nastavitve brskalnika.",
+      });
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Lana Wallet - Print</title>
+          <meta charset="utf-8">
+        </head>
+        <body>
+          <div id="print-root"></div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    const rootElement = printWindow.document.getElementById('print-root');
+    if (rootElement) {
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <PrintDocument
+          customText={customText}
+          result={result}
+          wifInput={wifInput}
+          walletsPerPage={parseInt(walletsPerPage)}
+        />
+      );
+
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
   };
 
   // Validate WIF input async
@@ -387,6 +438,68 @@ const WalletConverter = () => {
               </Card>
             </>
           )}
+
+          {/* Print Options */}
+          <Card className="bg-gradient-card border-border shadow-primary">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Printer className="h-5 w-5" />
+                Generiraj dokument za tisk
+              </CardTitle>
+              <CardDescription>
+                Ustvari dokument A4 z denarnicami in QR kodami za varno shranjevanje
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="custom-text">Besedilo na vrhu (opcijsko)</Label>
+                <Textarea
+                  id="custom-text"
+                  placeholder="npr. 100 Million Fun"
+                  value={customText}
+                  onChange={(e) => setCustomText(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Število denarnic na stran</Label>
+                <RadioGroup value={walletsPerPage} onValueChange={setWalletsPerPage}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="2" id="two-wallets" />
+                    <Label htmlFor="two-wallets" className="cursor-pointer font-normal">
+                      2 denarnici na stran
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="5" id="five-wallets" />
+                    <Label htmlFor="five-wallets" className="cursor-pointer font-normal">
+                      5 denarnic na stran
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <Button 
+                onClick={handlePrint}
+                variant="hero"
+                size="lg"
+                className="w-full"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Generiraj dokument za tisk
+              </Button>
+
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  <strong>IMPORTANT SECURITY NOTICE:</strong> Store this document securely in THREE separate locations. 
+                  Keep it away from moisture, fire, and unauthorized access. Anyone with access to the Private Key can access your funds.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
         </div>
       )}
 
