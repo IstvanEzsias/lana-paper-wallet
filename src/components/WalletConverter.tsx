@@ -147,6 +147,25 @@ const WalletConverter = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Instructions */}
+      <Card className="bg-gradient-card border-border shadow-glow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Info className="h-5 w-5" />
+            Instructions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-2">
+          <p>
+            This website is designed to help you generate QR codes from your LanaCoin private keys 
+            and print them for secure offline storage.
+          </p>
+          <p>
+            Enter your WIF private key below, generate the conversion, and then print the document 
+            to store your wallet information safely in multiple secure locations.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Input Section */}
       <Card className="bg-gradient-card border-border shadow-primary">
