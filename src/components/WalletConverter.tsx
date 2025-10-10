@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Printer } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +23,6 @@ const WalletConverter = () => {
   const [showQRScanner, setShowQRScanner] = React.useState(false);
   const [showNostrData, setShowNostrData] = React.useState(false);
   const [customText, setCustomText] = React.useState('');
-  const [walletsPerPage, setWalletsPerPage] = React.useState('2');
   const { toast } = useToast();
 
   const handleConvert = async () => {
@@ -117,7 +115,7 @@ const WalletConverter = () => {
           customText={customText}
           result={result}
           wifInput={wifInput}
-          walletsPerPage={parseInt(walletsPerPage)}
+          showNostrData={showNostrData}
         />
       );
 
@@ -463,23 +461,11 @@ const WalletConverter = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Število denarnic na stran</Label>
-                <RadioGroup value={walletsPerPage} onValueChange={setWalletsPerPage}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="2" id="two-wallets" />
-                    <Label htmlFor="two-wallets" className="cursor-pointer font-normal">
-                      2 denarnici na stran
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="5" id="five-wallets" />
-                    <Label htmlFor="five-wallets" className="cursor-pointer font-normal">
-                      5 denarnic na stran
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                {showNostrData 
+                  ? "Dokument bo vseboval 5 kartic: LANA Private Key, Wallet ID in 3 NOSTR podatke"
+                  : "Dokument bo vseboval 2 kartici: LANA Private Key in Wallet ID"}
+              </p>
 
               <Button 
                 onClick={handlePrint}

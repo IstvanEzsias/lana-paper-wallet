@@ -1,27 +1,114 @@
 import React from 'react';
-import PrintableWallet from './PrintableWallet';
+import { QRCodeSVG } from 'qrcode.react';
 import { type ConversionResult } from '@/lib/crypto';
 
 interface PrintDocumentProps {
   customText: string;
   result: ConversionResult;
   wifInput: string;
-  walletsPerPage: number;
+  showNostrData: boolean;
 }
+
+interface WalletCardProps {
+  title: string;
+  subtitle: string;
+  value: string;
+  qrValue: string;
+  walletName?: string;
+}
+
+const WalletCard: React.FC<WalletCardProps> = ({ title, subtitle, value, qrValue, walletName }) => {
+  return (
+    <div className="wallet-card bg-white text-black p-6 break-inside-avoid border-2 border-gray-300 rounded-lg mb-4">
+      <div className="text-center mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+        <p className="text-sm text-gray-600">{subtitle}</p>
+      </div>
+
+      {walletName !== undefined && (
+        <div className="mb-4">
+          <p className="font-semibold text-gray-700 text-sm mb-1">Wallet Name:</p>
+          <div className="min-h-[30px] border-b-2 border-gray-400 pb-1">{walletName}</div>
+        </div>
+      )}
+
+      <div className="mb-4">
+        <p className="font-semibold text-gray-700 text-sm mb-1">Value:</p>
+        <p className="text-xs font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
+      </div>
+
+      <div className="flex justify-center pt-2">
+        <div className="text-center">
+          <div className="border-2 border-gray-800 p-2 inline-block bg-white">
+            <QRCodeSVG value={qrValue} size={120} level="H" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PrintDocument: React.FC<PrintDocumentProps> = ({ 
   customText, 
   result, 
   wifInput, 
-  walletsPerPage 
+  showNostrData 
 }) => {
+  const cards = showNostrData ? [
+    {
+      title: "LANA Private Key (WIF)",
+      subtitle: "Your LanaCoin private key in WIF format",
+      value: wifInput,
+      qrValue: wifInput,
+      walletName: ""
+    },
+    {
+      title: "LanaCoin Wallet ID",
+      subtitle: "Your wallet address",
+      value: result.walletId,
+      qrValue: result.walletId
+    },
+    {
+      title: "Nostr HEX ID",
+      subtitle: "32-byte hexadecimal Nostr public key",
+      value: result.nostrHexId,
+      qrValue: result.nostrHexId
+    },
+    {
+      title: "Nostr npub ID",
+      subtitle: "Bech32-encoded Nostr public key",
+      value: result.nostrNpubId,
+      qrValue: result.nostrNpubId
+    },
+    {
+      title: "Nostr Private Key (HEX)",
+      subtitle: "32-byte hexadecimal Nostr private key",
+      value: result.privateKeyHex,
+      qrValue: result.privateKeyHex
+    }
+  ] : [
+    {
+      title: "LANA Private Key (WIF)",
+      subtitle: "Your LanaCoin private key in WIF format",
+      value: wifInput,
+      qrValue: wifInput,
+      walletName: ""
+    },
+    {
+      title: "LanaCoin Wallet ID",
+      subtitle: "Your wallet address",
+      value: result.walletId,
+      qrValue: result.walletId
+    }
+  ];
+
   return (
     <div className="print-document">
       <style>{`
         @media print {
           @page {
             size: A4;
-            margin: 20mm;
+            margin: 15mm;
           }
           body {
             print-color-adjust: exact;
@@ -30,9 +117,6 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
           .no-print {
             display: none !important;
           }
-          .page-break {
-            page-break-after: always;
-          }
         }
         
         .print-document {
@@ -40,32 +124,40 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
           width: 210mm;
           min-height: 297mm;
           margin: 0 auto;
-          padding: 20mm;
+          padding: 15mm;
           box-sizing: border-box;
         }
         
         .wallet-card {
-          margin-bottom: 15mm;
+          margin-bottom: 8mm;
         }
         
         .custom-header {
           text-align: center;
-          font-size: 18px;
+          font-size: 20px;
           font-weight: bold;
-          margin-bottom: 10mm;
-          padding-bottom: 5mm;
-          border-bottom: 2px solid #333;
+          margin-bottom: 8mm;
+          padding-bottom: 4mm;
+          border-bottom: 3px solid #333;
           color: #000;
         }
         
         .security-warning {
-          margin-top: 10mm;
-          padding: 5mm;
+          margin-top: 8mm;
+          padding: 4mm;
           background-color: #fff3cd;
           border: 2px solid #ffc107;
           border-radius: 4px;
           text-align: center;
           color: #000;
+        }
+        
+        .cards-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          max-width: 180mm;
+          margin: 0 auto;
         }
         
         @media screen {
@@ -81,18 +173,22 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
         </div>
       )}
 
-      {Array.from({ length: walletsPerPage }).map((_, index) => (
-        <PrintableWallet
-          key={index}
-          walletName=""
-          result={result}
-          wifInput={wifInput}
-        />
-      ))}
+      <div className="cards-container">
+        {cards.map((card, index) => (
+          <WalletCard
+            key={index}
+            title={card.title}
+            subtitle={card.subtitle}
+            value={card.value}
+            qrValue={card.qrValue}
+            walletName={card.walletName}
+          />
+        ))}
+      </div>
 
       <div className="security-warning">
-        <p className="font-bold text-lg mb-2">⚠️ IMPORTANT SECURITY NOTICE ⚠️</p>
-        <p className="text-sm">
+        <p className="font-bold text-base mb-2">⚠️ IMPORTANT SECURITY NOTICE ⚠️</p>
+        <p className="text-xs">
           Store this document securely in THREE separate locations. Keep it away from moisture, 
           fire, and unauthorized access. Anyone with access to the Private Key can access your funds. 
           Never share your private key with anyone.
