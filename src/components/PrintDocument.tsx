@@ -11,29 +11,18 @@ interface PrintDocumentProps {
 
 interface WalletCardProps {
   title: string;
-  subtitle: string;
   value: string;
   qrValue: string;
-  walletName?: string;
 }
 
-const WalletCard: React.FC<WalletCardProps> = ({ title, subtitle, value, qrValue, walletName }) => {
+const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue }) => {
   return (
     <div className="wallet-card bg-white text-black p-6 break-inside-avoid border-2 border-gray-300 rounded-lg mb-4">
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-        <p className="text-sm text-gray-600">{subtitle}</p>
       </div>
 
-      {walletName !== undefined && (
-        <div className="mb-4">
-          <p className="font-semibold text-gray-700 text-sm mb-1">Wallet Name:</p>
-          <div className="min-h-[30px] border-b-2 border-gray-400 pb-1">{walletName}</div>
-        </div>
-      )}
-
       <div className="mb-4">
-        <p className="font-semibold text-gray-700 text-sm mb-1">Value:</p>
         <p className="text-xs font-mono break-all border-b-2 border-gray-400 pb-2">{value}</p>
       </div>
 
@@ -57,46 +46,37 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
   const cards = showNostrData ? [
     {
       title: "LANA Private Key (WIF)",
-      subtitle: "Your LanaCoin private key in WIF format",
       value: wifInput,
-      qrValue: wifInput,
-      walletName: ""
+      qrValue: wifInput
     },
     {
       title: "LanaCoin Wallet ID",
-      subtitle: "Your wallet address",
       value: result.walletId,
       qrValue: result.walletId
     },
     {
       title: "Nostr HEX ID",
-      subtitle: "32-byte hexadecimal Nostr public key",
       value: result.nostrHexId,
       qrValue: result.nostrHexId
     },
     {
       title: "Nostr npub ID",
-      subtitle: "Bech32-encoded Nostr public key",
       value: result.nostrNpubId,
       qrValue: result.nostrNpubId
     },
     {
       title: "Nostr Private Key (HEX)",
-      subtitle: "32-byte hexadecimal Nostr private key",
       value: result.privateKeyHex,
       qrValue: result.privateKeyHex
     }
   ] : [
     {
       title: "LANA Private Key (WIF)",
-      subtitle: "Your LanaCoin private key in WIF format",
       value: wifInput,
-      qrValue: wifInput,
-      walletName: ""
+      qrValue: wifInput
     },
     {
       title: "LanaCoin Wallet ID",
-      subtitle: "Your wallet address",
       value: result.walletId,
       qrValue: result.walletId
     }
@@ -178,10 +158,8 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
           <WalletCard
             key={index}
             title={card.title}
-            subtitle={card.subtitle}
             value={card.value}
             qrValue={card.qrValue}
-            walletName={card.walletName}
           />
         ))}
       </div>
