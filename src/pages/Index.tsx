@@ -1,7 +1,12 @@
 import WalletConverter from '@/components/WalletConverter';
 import headerImage from '@/assets/lana-header.png';
+import { Button } from '@/components/ui/button';
+import { Wallet } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Header */}
@@ -12,6 +17,26 @@ const Index = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
+        
+        {/* Create New Wallet Button - Top Right */}
+        <div className="absolute top-6 right-6 z-10">
+          <Button 
+            variant="hero"
+            size="lg"
+            asChild
+          >
+            <a 
+              href="https://www.offlinelana.org" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="gap-2"
+            >
+              <Wallet className="h-5 w-5" />
+              {t.createWallet}
+            </a>
+          </Button>
+        </div>
+        
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] text-center px-4">
             LANA Paper Wallet
