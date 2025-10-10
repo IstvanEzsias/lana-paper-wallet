@@ -185,14 +185,16 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
         ))}
       </div>
 
-      <div className="security-warning">
-        <p className="font-bold text-base mb-2">⚠️ IMPORTANT SECURITY NOTICE ⚠️</p>
-        <p className="text-xs">
-          Store this document securely in THREE separate locations. Keep it away from moisture, 
-          fire, and unauthorized access. Anyone with access to the Private Key can access your funds. 
-          Never share your private key with anyone.
-        </p>
-      </div>
+      {!showNostrData && (
+        <div className="security-warning">
+          <p className="font-bold text-base mb-2">⚠️ IMPORTANT SECURITY NOTICE ⚠️</p>
+          <p className="text-xs">
+            Store this document securely in THREE separate locations. Keep it away from moisture, 
+            fire, and unauthorized access. Anyone with access to the Private Key can access your funds. 
+            Never share your private key with anyone.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
