@@ -6,10 +6,10 @@ import { bech32 } from 'bech32';
 const ec = new elliptic.ec('secp256k1');
 
 // Utility functions
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2);
+function hexToBytes(hex: string): number[] {
+  const bytes: number[] = [];
   for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    bytes.push(parseInt(hex.substr(i, 2), 16));
   }
   return bytes;
 }
@@ -20,7 +20,8 @@ function bytesToHex(bytes: Uint8Array): string {
 
 // SHA-256 hash function using Web Crypto API
 async function sha256(hex: string): Promise<string> {
-  const buffer = hexToBytes(hex);
+  const bytes = hexToBytes(hex);
+  const buffer = new Uint8Array(bytes);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   return bytesToHex(new Uint8Array(hashBuffer));
 }
@@ -35,20 +36,21 @@ async function sha256d(data: Uint8Array): Promise<Uint8Array> {
   const hex = bytesToHex(data);
   const firstHash = await sha256(hex);
   const secondHash = await sha256(firstHash);
-  return hexToBytes(secondHash);
+  return new Uint8Array(hexToBytes(secondHash));
 }
 
 // Base58 encoding (matching reference implementation)
-function base58Encode(bytes: Uint8Array): string {
+function base58Encode(bytes: number[] | Uint8Array): string {
   const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let num = BigInt('0x' + bytesToHex(bytes));
+  const byteArray = Array.isArray(bytes) ? new Uint8Array(bytes) : bytes;
+  let num = BigInt('0x' + bytesToHex(byteArray));
   let encoded = "";
   while (num > 0n) {
     let remainder = num % 58n;
     num = num / 58n;
     encoded = alphabet[Number(remainder)] + encoded;
   }
-  for (const byte of bytes) {
+  for (const byte of byteArray) {
     if (byte !== 0) break;
     encoded = '1' + encoded;
   }
@@ -71,7 +73,7 @@ function base58Decode(encoded: string): Uint8Array {
   
   const hex = decoded.toString(16);
   const paddedHex = hex.length % 2 ? '0' + hex : hex;
-  let bytes = hexToBytes(paddedHex);
+  let bytes = new Uint8Array(hexToBytes(paddedHex));
   
   // Add leading zeros for '1' characters
   let leadingOnes = 0;
@@ -167,7 +169,7 @@ async function generateLanaAddress(publicKeyHex: string): Promise<string> {
     const checksum = await sha256(firstHash);
     
     // 5. Encode with Base58Check
-    const finalAddress = base58Encode(hexToBytes(versionedPayload + checksum.substring(0, 8)));
+    const finalAddress = base58Encode(new Uint8Array(hexToBytes(versionedPayload + checksum.substring(0, 8))));
     return finalAddress;
   } catch (error) {
     throw new Error(`Failed to generate LANA address: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -200,7 +202,7 @@ function deriveNostrPublicKey(privateKeyHex: string): string {
 function hexToNpub(hexPubKey: string): string {
   try {
     // 1. Convert hex to bytes
-    const pubKeyBytes = hexToBytes(hexPubKey);
+    const pubKeyBytes = new Uint8Array(hexToBytes(hexPubKey));
     
     // 2. Convert bytes to bech32 5-bit groups
     const words = bech32.toWords(pubKeyBytes);
