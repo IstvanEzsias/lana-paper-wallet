@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -232,6 +233,36 @@ const WalletConverter = () => {
             </Badge>
           </div>
 
+          {/* LANA Private Key (WIF) */}
+          <Card className="bg-gradient-card border-border shadow-crypto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-crypto">
+                <Key className="h-5 w-5" />
+                LANA Private Key (WIF)
+              </CardTitle>
+              <CardDescription>
+                Your original LanaCoin private key in WIF format
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
+                <code className="flex-1 text-sm font-mono break-all">
+                  {wifInput}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => copyToClipboard(wifInput, 'LANA Private Key')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex justify-center p-4 bg-white rounded-lg">
+                <QRCodeSVG value={wifInput} size={200} level="H" />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Wallet ID */}
           <Card className="bg-gradient-card border-border shadow-crypto">
             <CardHeader>
@@ -243,7 +274,7 @@ const WalletConverter = () => {
                 Your LanaCoin wallet address derived from the private key
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
                 <code className="flex-1 text-sm font-mono break-all">
                   {result.walletId}
@@ -255,6 +286,9 @@ const WalletConverter = () => {
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
+              </div>
+              <div className="flex justify-center p-4 bg-white rounded-lg">
+                <QRCodeSVG value={result.walletId} size={200} level="H" />
               </div>
             </CardContent>
           </Card>
@@ -273,7 +307,7 @@ const WalletConverter = () => {
                     32-byte hexadecimal Nostr public key identifier
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
                     <code className="flex-1 text-sm font-mono break-all">
                       {result.nostrHexId}
@@ -285,6 +319,9 @@ const WalletConverter = () => {
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
+                  </div>
+                  <div className="flex justify-center p-4 bg-white rounded-lg">
+                    <QRCodeSVG value={result.nostrHexId} size={200} level="H" />
                   </div>
                 </CardContent>
               </Card>
@@ -300,7 +337,7 @@ const WalletConverter = () => {
                     Human-readable bech32-encoded Nostr public key (npub format)
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
                     <code className="flex-1 text-sm font-mono break-all">
                       {result.nostrNpubId}
@@ -312,6 +349,9 @@ const WalletConverter = () => {
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
+                  </div>
+                  <div className="flex justify-center p-4 bg-white rounded-lg">
+                    <QRCodeSVG value={result.nostrNpubId} size={200} level="H" />
                   </div>
                 </CardContent>
               </Card>
@@ -327,7 +367,7 @@ const WalletConverter = () => {
                     32-byte hexadecimal Nostr private key for signing
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
                     <code className="flex-1 text-sm font-mono break-all">
                       {result.privateKeyHex}
@@ -339,6 +379,9 @@ const WalletConverter = () => {
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
+                  </div>
+                  <div className="flex justify-center p-4 bg-white rounded-lg">
+                    <QRCodeSVG value={result.privateKeyHex} size={200} level="H" />
                   </div>
                 </CardContent>
               </Card>
