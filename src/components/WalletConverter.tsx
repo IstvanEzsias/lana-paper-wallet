@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
@@ -168,10 +167,12 @@ const WalletConverter = () => {
 
           <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
             <div className="flex items-start space-x-3">
-              <Checkbox 
-                id="show-nostr" 
+              <input
+                type="checkbox"
+                id="show-nostr"
                 checked={showNostrData}
-                onCheckedChange={(checked) => setShowNostrData(checked as boolean)}
+                onChange={(e) => setShowNostrData(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-primary text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
               />
               <div className="flex-1 space-y-1">
                 <Label 
