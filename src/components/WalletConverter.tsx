@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import QRScanner from '@/components/QRScanner';
@@ -17,6 +18,7 @@ const WalletConverter = () => {
   const [error, setError] = useState('');
   const [isValidInput, setIsValidInput] = useState<boolean | null>(null);
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showNostrData, setShowNostrData] = useState(false);
   const { toast } = useToast();
 
   const handleConvert = async () => {
@@ -164,6 +166,32 @@ const WalletConverter = () => {
             )}
           </div>
 
+          <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
+            <div className="flex items-start space-x-3">
+              <Checkbox 
+                id="show-nostr" 
+                checked={showNostrData}
+                onCheckedChange={(checked) => setShowNostrData(checked as boolean)}
+              />
+              <div className="flex-1 space-y-1">
+                <Label 
+                  htmlFor="show-nostr" 
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Prikaži tudi NOSTR podatke
+                </Label>
+                <p className="text-xs text-muted-foreground flex items-start gap-1">
+                  <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                  <span>
+                    NOSTR podatke boste potrebovali samo, če imate račun tudi na drugih NOSTR platformah. 
+                    V nasprotnem primeru zadostuje samo LANA Private Key, iz katerega lahko vedno pozneje 
+                    izpeljete še NOSTR podatke.
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <Button 
             onClick={handleConvert}
             disabled={isConverting || !isValidInput}
@@ -230,86 +258,91 @@ const WalletConverter = () => {
             </CardContent>
           </Card>
 
-          {/* Nostr HEX ID */}
-          <Card className="bg-gradient-card border-border shadow-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                <Hash className="h-5 w-5" />
-                Nostr HEX ID
-              </CardTitle>
-              <CardDescription>
-                32-byte hexadecimal Nostr public key identifier
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
-                <code className="flex-1 text-sm font-mono break-all">
-                  {result.nostrHexId}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => copyToClipboard(result.nostrHexId, 'Nostr HEX ID')}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Nostr Data - Conditionally rendered */}
+          {showNostrData && (
+            <>
+              {/* Nostr HEX ID */}
+              <Card className="bg-gradient-card border-border shadow-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <Hash className="h-5 w-5" />
+                    Nostr HEX ID
+                  </CardTitle>
+                  <CardDescription>
+                    32-byte hexadecimal Nostr public key identifier
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
+                    <code className="flex-1 text-sm font-mono break-all">
+                      {result.nostrHexId}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => copyToClipboard(result.nostrHexId, 'Nostr HEX ID')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Nostr npub ID */}
-          <Card className="bg-gradient-card border-border shadow-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                <Key className="h-5 w-5" />
-                Nostr npub ID
-              </CardTitle>
-              <CardDescription>
-                Human-readable bech32-encoded Nostr public key (npub format)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
-                <code className="flex-1 text-sm font-mono break-all">
-                  {result.nostrNpubId}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => copyToClipboard(result.nostrNpubId, 'Nostr npub ID')}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              {/* Nostr npub ID */}
+              <Card className="bg-gradient-card border-border shadow-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <Key className="h-5 w-5" />
+                    Nostr npub ID
+                  </CardTitle>
+                  <CardDescription>
+                    Human-readable bech32-encoded Nostr public key (npub format)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
+                    <code className="flex-1 text-sm font-mono break-all">
+                      {result.nostrNpubId}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => copyToClipboard(result.nostrNpubId, 'Nostr npub ID')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Nostr Private Key */}
-          <Card className="bg-gradient-card border-border shadow-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                <Key className="h-5 w-5" />
-                Nostr Private Key (HEX)
-              </CardTitle>
-              <CardDescription>
-                32-byte hexadecimal Nostr private key for signing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
-                <code className="flex-1 text-sm font-mono break-all">
-                  {result.privateKeyHex}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => copyToClipboard(result.privateKeyHex, 'Nostr Private Key')}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              {/* Nostr Private Key */}
+              <Card className="bg-gradient-card border-border shadow-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <Key className="h-5 w-5" />
+                    Nostr Private Key (HEX)
+                  </CardTitle>
+                  <CardDescription>
+                    32-byte hexadecimal Nostr private key for signing
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
+                    <code className="flex-1 text-sm font-mono break-all">
+                      {result.privateKeyHex}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => copyToClipboard(result.privateKeyHex, 'Nostr Private Key')}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       )}
 
