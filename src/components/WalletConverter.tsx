@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Printer } from 'lucide-react';
-import { convertWifToIds, isValidWifFormat, type ConversionResult } from '@/lib/crypto';
+import { convertWifToIds, isValidWifFormat, normalizePrivateKey, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -29,7 +29,10 @@ const WalletConverter = () => {
   const { t, language } = useLanguage();
 
   const handleConvert = async () => {
-    if (!wifInput.trim()) {
+    // Normalize input to remove all invisible characters
+    const cleanWif = normalizePrivateKey(wifInput);
+    
+    if (!cleanWif) {
       setError(t.errors.enterWif);
       return;
     }
@@ -39,7 +42,7 @@ const WalletConverter = () => {
     setResult(null);
 
     try {
-      const conversionResult = await convertWifToIds(wifInput.trim());
+      const conversionResult = await convertWifToIds(cleanWif);
       setResult(conversionResult);
       toast({
         title: t.toasts.conversionSuccess,
@@ -60,7 +63,9 @@ const WalletConverter = () => {
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      // Normalize text before copying to ensure clean clipboard content
+      const cleanText = normalizePrivateKey(text);
+      await navigator.clipboard.writeText(cleanText);
       toast({
         title: t.toasts.copied,
         description: `${label} ${t.toasts.copiedDesc}`,
@@ -132,13 +137,16 @@ const WalletConverter = () => {
   // Validate WIF input async
   React.useEffect(() => {
     const validateInput = async () => {
-      if (!wifInput.trim()) {
+      // Normalize input to remove all invisible characters
+      const cleanWif = normalizePrivateKey(wifInput);
+      
+      if (!cleanWif) {
         setIsValidInput(null);
         return;
       }
       
       try {
-        const valid = await isValidWifFormat(wifInput.trim());
+        const valid = await isValidWifFormat(cleanWif);
         setIsValidInput(valid);
       } catch {
         setIsValidInput(false);

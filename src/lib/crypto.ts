@@ -6,6 +6,16 @@ import { bech32 } from 'bech32';
 const ec = new elliptic.ec('secp256k1');
 
 // Utility functions
+
+/**
+ * Normalizes string by removing all whitespace and zero-width characters
+ * This handles invisible characters that can be added during copy/paste
+ */
+export function normalizePrivateKey(input: string): string {
+  // Remove all standard whitespace, zero-width spaces, and other invisible characters
+  return input.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
+}
+
 function hexToBytes(hex: string): number[] {
   const bytes: number[] = [];
   for (let i = 0; i < hex.length; i += 2) {
@@ -99,8 +109,11 @@ function base58Decode(encoded: string): Uint8Array {
  */
 export async function wifToPrivateKey(wif: string): Promise<string> {
   try {
+    // Normalize input to remove invisible characters
+    const cleanWif = normalizePrivateKey(wif);
+    
     // 1. Decode Base58 to bytes
-    const decoded = base58Decode(wif);
+    const decoded = base58Decode(cleanWif);
     
     // 2. Split payload and checksum
     const payload = decoded.slice(0, -4);     // All except last 4 bytes
@@ -226,8 +239,11 @@ export interface ConversionResult {
 
 export async function convertWifToIds(wif: string): Promise<ConversionResult> {
   try {
+    // Normalize input to remove invisible characters
+    const cleanWif = normalizePrivateKey(wif);
+    
     // Step 1: Extract private key from WIF
-    const privateKeyHex = await wifToPrivateKey(wif);
+    const privateKeyHex = await wifToPrivateKey(cleanWif);
     
     // Step 2: Generate public key
     const publicKeyHex = generatePublicKey(privateKeyHex);
@@ -255,12 +271,15 @@ export async function convertWifToIds(wif: string): Promise<ConversionResult> {
  */
 export async function isValidWifFormat(wif: string): Promise<boolean> {
   try {
+    // Normalize input to remove invisible characters
+    const cleanWif = normalizePrivateKey(wif);
+    
     // Basic format checks
-    if (!wif || typeof wif !== 'string') return false;
-    if (wif.length < 50 || wif.length > 55) return false;
+    if (!cleanWif || typeof cleanWif !== 'string') return false;
+    if (cleanWif.length < 50 || cleanWif.length > 55) return false;
     
     // Try to decode - this will throw if invalid
-    await wifToPrivateKey(wif);
+    await wifToPrivateKey(cleanWif);
     return true;
   } catch {
     return false;
