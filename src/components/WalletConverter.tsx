@@ -493,7 +493,7 @@ const WalletConverter = () => {
           <Card className="bg-gradient-card border-border shadow-primary">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
-                <Printer className="h-5 w-5" />
+                <Download className="h-5 w-5" />
                 {t.print.title}
               </CardTitle>
               <CardDescription>
