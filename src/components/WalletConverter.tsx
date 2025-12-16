@@ -46,13 +46,23 @@ const WalletConverter = () => {
     setResult(null);
 
     try {
+      console.log('Starting conversion for WIF:', cleanWif.substring(0, 10) + '...');
       const conversionResult = await convertWifToIds(cleanWif);
+      console.log('Conversion result:', conversionResult);
+      
+      if (!conversionResult || !conversionResult.walletId) {
+        throw new Error('Invalid conversion result');
+      }
+      
       setResult(conversionResult);
+      console.log('Result state set successfully');
+      
       toast({
         title: t.toasts.conversionSuccess,
         description: t.toasts.conversionSuccessDesc,
       });
     } catch (err) {
+      console.error('Conversion error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Conversion failed';
       setError(errorMessage);
       toast({
@@ -326,7 +336,7 @@ const WalletConverter = () => {
       </Card>
 
       {/* Results Section */}
-      {result && (
+      {result && result.walletId && (
         <div className="space-y-4">
           <div className="text-center">
             <Badge variant="outline" className="bg-success/10 text-success border-success">
