@@ -21,6 +21,7 @@ export interface Translations {
   };
   results: {
     complete: string;
+    backToInput: string;
     lanaPrivateKey: string;
     lanaPrivateKeyDesc: string;
     walletId: string;
@@ -99,6 +100,7 @@ export const translations: Record<Language, Translations> = {
     },
     results: {
       complete: 'Conversion Complete',
+      backToInput: 'Back to Input',
       lanaPrivateKey: 'LANA Private Key (WIF)',
       lanaPrivateKeyDesc: 'Your original LanaCoin private key in WIF format',
       walletId: 'LanaCoin Wallet ID',
@@ -175,6 +177,7 @@ export const translations: Record<Language, Translations> = {
     },
     results: {
       complete: 'Pretvorba končana',
+      backToInput: 'Nazaj na vnos',
       lanaPrivateKey: 'LANA zasebni ključ (WIF)',
       lanaPrivateKeyDesc: 'Vaš originalni LanaCoin zasebni ključ v WIF obliki',
       walletId: 'LanaCoin ID denarnice',
@@ -251,6 +254,7 @@ export const translations: Record<Language, Translations> = {
     },
     results: {
       complete: 'Konverzió befejezve',
+      backToInput: 'Vissza a bevitelhez',
       lanaPrivateKey: 'LANA privát kulcs (WIF)',
       lanaPrivateKeyDesc: 'Az eredeti LanaCoin privát kulcsa WIF formátumban',
       walletId: 'LanaCoin tárca azonosító',
