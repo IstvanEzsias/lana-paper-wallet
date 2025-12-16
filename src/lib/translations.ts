@@ -40,6 +40,8 @@ export interface Translations {
     twoCards: string;
     fiveCards: string;
     generateButton: string;
+    downloadPdfButton: string;
+    generatingPdf: string;
     securityNotice: string;
     securityText: string;
   };
@@ -65,6 +67,10 @@ export interface Translations {
     qrScannedDesc: string;
     printError: string;
     printErrorDesc: string;
+    pdfSuccess: string;
+    pdfSuccessDesc: string;
+    pdfError: string;
+    pdfErrorDesc: string;
   };
   errors: {
     enterWif: string;
@@ -112,6 +118,8 @@ export const translations: Record<Language, Translations> = {
       twoCards: 'The document will contain 2 cards: LANA Private Key and Wallet ID',
       fiveCards: 'The document will contain 5 cards: LANA Private Key, Wallet ID and 3 NOSTR data fields',
       generateButton: 'Generate Print Document',
+      downloadPdfButton: 'Download PDF',
+      generatingPdf: 'Generating PDF...',
       securityNotice: 'IMPORTANT SECURITY NOTICE:',
       securityText: 'Store this document securely in THREE separate locations. Keep it away from moisture, fire, and unauthorized access. Anyone with access to the Private Key can access your funds.',
     },
@@ -137,6 +145,10 @@ export const translations: Record<Language, Translations> = {
       qrScannedDesc: 'Private key has been read from QR code',
       printError: 'Error',
       printErrorDesc: 'Cannot open print window. Check your browser settings.',
+      pdfSuccess: 'PDF Generated',
+      pdfSuccessDesc: 'Your wallet document has been downloaded.',
+      pdfError: 'PDF Error',
+      pdfErrorDesc: 'Could not generate PDF. Please try again.',
     },
     errors: {
       enterWif: 'Please enter a WIF private key',
@@ -182,6 +194,8 @@ export const translations: Record<Language, Translations> = {
       twoCards: 'Dokument bo vseboval 2 kartici: LANA zasebni ključ in ID denarnice',
       fiveCards: 'Dokument bo vseboval 5 kartic: LANA zasebni ključ, ID denarnice in 3 NOSTR podatkovna polja',
       generateButton: 'Generiraj dokument za tiskanje',
+      downloadPdfButton: 'Prenesi PDF',
+      generatingPdf: 'Generiram PDF...',
       securityNotice: 'POMEMBNO VARNOSTNO OBVESTILO:',
       securityText: 'Ta dokument shranjujte varno na TREH ločenih lokacijah. Hranite ga stran od vlage, ognja in nepooblaščenega dostopa. Kdorkoli ima dostop do zasebnega ključa, lahko dostopa do vaših sredstev.',
     },
@@ -207,6 +221,10 @@ export const translations: Record<Language, Translations> = {
       qrScannedDesc: 'Zasebni ključ je bil prebran iz QR kode',
       printError: 'Napaka',
       printErrorDesc: 'Ni mogoče odpreti okna za tiskanje. Preverite nastavitve brskalnika.',
+      pdfSuccess: 'PDF generiran',
+      pdfSuccessDesc: 'Dokument vaše denarnice je bil prenesen.',
+      pdfError: 'Napaka PDF',
+      pdfErrorDesc: 'Ni bilo mogoče generirati PDF. Poskusite znova.',
     },
     errors: {
       enterWif: 'Prosim vnesite WIF zasebni ključ',
@@ -252,6 +270,8 @@ export const translations: Record<Language, Translations> = {
       twoCards: 'A dokumentum 2 kártyát fog tartalmazni: LANA privát kulcs és tárca azonosító',
       fiveCards: 'A dokumentum 5 kártyát fog tartalmazni: LANA privát kulcs, tárca azonosító és 3 NOSTR adat mező',
       generateButton: 'Nyomtatási dokumentum generálása',
+      downloadPdfButton: 'PDF letöltése',
+      generatingPdf: 'PDF generálása...',
       securityNotice: 'FONTOS BIZTONSÁGI FIGYELMEZTETÉS:',
       securityText: 'Ezt a dokumentumot biztonságosan HÁROM külön helyen tárolja. Tartsa távol nedvességtől, tűztől és jogosulatlan hozzáféréstől. Bárki, aki hozzáfér a privát kulcshoz, hozzáférhet az eszközeihez.',
     },
@@ -277,6 +297,10 @@ export const translations: Record<Language, Translations> = {
       qrScannedDesc: 'Privát kulcs beolvasva a QR kódból',
       printError: 'Hiba',
       printErrorDesc: 'Nem lehet megnyitni a nyomtatási ablakot. Ellenőrizze a böngésző beállításait.',
+      pdfSuccess: 'PDF generálva',
+      pdfSuccessDesc: 'A tárca dokumentuma letöltve.',
+      pdfError: 'PDF hiba',
+      pdfErrorDesc: 'Nem sikerült a PDF generálása. Próbálja újra.',
     },
     errors: {
       enterWif: 'Kérjük, adjon meg egy WIF privát kulcsot',

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QRCodeSVG } from 'qrcode.react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Printer } from 'lucide-react';
+import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Download, Loader2 } from 'lucide-react';
 import { convertWifToIds, isValidWifFormat, normalizePrivateKey, type ConversionResult } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,6 +27,7 @@ const WalletConverter = () => {
   const [showQRScanner, setShowQRScanner] = React.useState(false);
   const [showNostrData, setShowNostrData] = React.useState(false);
   const [customText, setCustomText] = React.useState('');
+  const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
   const { toast } = useToast();
   const { t, language } = useLanguage();
 
@@ -88,48 +91,23 @@ const WalletConverter = () => {
     });
   };
 
-  const handlePrint = () => {
+  const handleDownloadPDF = async () => {
     if (!result) return;
-
-    // Create a hidden iframe for printing (works better on mobile/Android)
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    iframe.style.left = '-9999px';
-    document.body.appendChild(iframe);
-
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) {
-      toast({
-        variant: "destructive",
-        title: t.toasts.printError,
-        description: t.toasts.printErrorDesc,
-      });
-      document.body.removeChild(iframe);
-      return;
-    }
-
-    iframeDoc.open();
-    iframeDoc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Lana Wallet - Print</title>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-        </head>
-        <body>
-          <div id="print-root"></div>
-        </body>
-      </html>
-    `);
-    iframeDoc.close();
-
-    const rootElement = iframeDoc.getElementById('print-root');
-    if (rootElement) {
-      const root = ReactDOM.createRoot(rootElement);
+    
+    setIsGeneratingPDF(true);
+    
+    try {
+      // Create a temporary container for rendering
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '210mm';
+      container.style.background = 'white';
+      document.body.appendChild(container);
+      
+      // Render PrintDocument into the container
+      const root = ReactDOM.createRoot(container);
       root.render(
         <PrintDocument
           customText={customText}
@@ -139,14 +117,58 @@ const WalletConverter = () => {
           language={language}
         />
       );
-
-      setTimeout(() => {
-        iframe.contentWindow?.print();
-        // Remove iframe after printing
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 1000);
-      }, 500);
+      
+      // Wait for rendering and QR codes to load
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Capture the content with html2canvas
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: container.scrollWidth,
+        height: container.scrollHeight,
+      });
+      
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+      
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // Download the PDF
+      pdf.save('lana-wallet.pdf');
+      
+      // Cleanup
+      root.unmount();
+      document.body.removeChild(container);
+      
+      toast({
+        title: t.toasts.pdfSuccess,
+        description: t.toasts.pdfSuccessDesc,
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        variant: "destructive",
+        title: t.toasts.pdfError,
+        description: t.toasts.pdfErrorDesc,
+      });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -498,13 +520,23 @@ const WalletConverter = () => {
               </p>
 
               <Button 
-                onClick={handlePrint}
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
                 variant="hero"
                 size="lg"
                 className="w-full"
               >
-                <Printer className="h-4 w-4 mr-2" />
-                {t.print.generateButton}
+                {isGeneratingPDF ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {t.print.generatingPdf}
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    {t.print.downloadPdfButton}
+                  </>
+                )}
               </Button>
 
               <Alert className="bg-amber-50 border-amber-200">
