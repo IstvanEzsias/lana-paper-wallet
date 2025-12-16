@@ -91,31 +91,43 @@ const WalletConverter = () => {
   const handlePrint = () => {
     if (!result) return;
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
+    // Create a hidden iframe for printing (works better on mobile/Android)
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.left = '-9999px';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
       toast({
         variant: "destructive",
         title: t.toasts.printError,
         description: t.toasts.printErrorDesc,
       });
+      document.body.removeChild(iframe);
       return;
     }
 
-    printWindow.document.write(`
+    iframeDoc.open();
+    iframeDoc.write(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>Lana Wallet - Print</title>
           <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
         </head>
         <body>
           <div id="print-root"></div>
         </body>
       </html>
     `);
-    printWindow.document.close();
+    iframeDoc.close();
 
-    const rootElement = printWindow.document.getElementById('print-root');
+    const rootElement = iframeDoc.getElementById('print-root');
     if (rootElement) {
       const root = ReactDOM.createRoot(rootElement);
       root.render(
@@ -129,7 +141,11 @@ const WalletConverter = () => {
       );
 
       setTimeout(() => {
-        printWindow.print();
+        iframe.contentWindow?.print();
+        // Remove iframe after printing
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
       }, 500);
     }
   };
