@@ -86,7 +86,45 @@ const Results = () => {
         />
       );
       
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for React to render and QR codes to be ready
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Convert SVG QR codes to canvas for better html2canvas compatibility
+      const svgElements = container.querySelectorAll('svg');
+      for (const svg of svgElements) {
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = svg.clientWidth * 2 || 300;
+            canvas.height = svg.clientHeight * 2 || 300;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.fillStyle = 'white';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              const imgElement = document.createElement('img');
+              imgElement.src = canvas.toDataURL('image/png');
+              imgElement.style.width = svg.clientWidth + 'px';
+              imgElement.style.height = svg.clientHeight + 'px';
+              svg.parentNode?.replaceChild(imgElement, svg);
+            }
+            URL.revokeObjectURL(url);
+            resolve();
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(); // Continue even if one fails
+          };
+          img.src = url;
+        });
+      }
       
       const canvas = await html2canvas(container, {
         scale: 2,
