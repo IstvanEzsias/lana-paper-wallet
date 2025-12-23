@@ -1,5 +1,5 @@
 import React from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { type ConversionResult } from '@/lib/crypto';
 import { translations, type Language } from '@/lib/translations';
 
@@ -34,7 +34,13 @@ const WalletCard: React.FC<WalletCardProps> = ({ title, value, qrValue, hideValu
       <div className="flex justify-center pt-1">
         <div className="text-center">
           <div className="border-2 border-gray-800 p-2 inline-block bg-white">
-            <QRCodeSVG value={qrValue} size={150} level="H" />
+            <QRCodeCanvas 
+              value={qrValue} 
+              size={150} 
+              level="H"
+              bgColor="#ffffff"
+              fgColor="#000000"
+            />
           </div>
         </div>
       </div>
