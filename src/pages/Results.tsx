@@ -2,15 +2,13 @@ import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, Download, Loader2, ArrowLeft } from 'lucide-react';
+import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, Printer, ArrowLeft } from 'lucide-react';
 import { type ConversionResult, normalizePrivateKey } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,7 +29,6 @@ const Results = () => {
   
   const state = location.state as ResultsState | null;
   const [customText, setCustomText] = React.useState('');
-  const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
 
   // Redirect if no data
   React.useEffect(() => {
@@ -63,80 +60,55 @@ const Results = () => {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    setIsGeneratingPDF(true);
-    
-    try {
-      const container = document.createElement('div');
-      container.style.position = 'fixed';
-      container.style.left = '0';
-      container.style.top = '0';
-      container.style.width = '210mm';
-      container.style.background = 'white';
-      container.style.visibility = 'hidden';
-      container.style.pointerEvents = 'none';
-      container.style.zIndex = '-9999';
-      document.body.appendChild(container);
-      
-      const root = ReactDOM.createRoot(container);
-      root.render(
-        <PrintDocument
-          customText={customText}
-          result={result}
-          wifInput={wifInput}
-          showNostrData={showNostrData}
-          language={language}
-        />
-      );
-      
-      // Wait for React to render and canvas QR codes to be ready
-      await new Promise(resolve => setTimeout(resolve, 100));
-      await new Promise(resolve => requestAnimationFrame(() => {
-        requestAnimationFrame(() => resolve(undefined));
-      }));
-      
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-      
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save('lana-wallet.pdf');
-      
-      root.unmount();
-      document.body.removeChild(container);
-      
-      toast({
-        title: t.toasts.pdfSuccess,
-        description: t.toasts.pdfSuccessDesc,
-      });
-    } catch (error) {
-      console.error('PDF generation error:', error);
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
       toast({
         variant: "destructive",
-        title: t.toasts.pdfError,
-        description: t.toasts.pdfErrorDesc,
+        title: "Napaka",
+        description: "Brskalnik je blokiral odpiranje okna za tisk.",
       });
-    } finally {
-      setIsGeneratingPDF(false);
+      return;
     }
+
+    const container = document.createElement('div');
+    const root = ReactDOM.createRoot(container);
+    root.render(
+      <PrintDocument
+        customText={customText}
+        result={result}
+        wifInput={wifInput}
+        showNostrData={showNostrData}
+        language={language}
+      />
+    );
+
+    // Wait for render then write to print window
+    setTimeout(() => {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>LANA Wallet</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: Arial, sans-serif; }
+            </style>
+          </head>
+          <body>
+            ${container.innerHTML}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      
+      // Wait for QR codes to render then print
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+      
+      root.unmount();
+    }, 100);
   };
 
   return (
@@ -322,7 +294,7 @@ const Results = () => {
         <Card className="bg-gradient-card border-border shadow-primary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
-              <Download className="h-5 w-5" />
+              <Printer className="h-5 w-5" />
               {t.print.title}
             </CardTitle>
             <CardDescription>
@@ -349,23 +321,13 @@ const Results = () => {
             </p>
 
             <Button 
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
+              onClick={handlePrint}
               variant="hero"
               size="lg"
               className="w-full"
             >
-              {isGeneratingPDF ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t.print.generatingPdf}
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4 mr-2" />
-                  {t.print.downloadPdfButton}
-                </>
-              )}
+              <Printer className="h-4 w-4 mr-2" />
+              {t.print.printButton || 'Natisni'}
             </Button>
 
             <Alert className="bg-amber-50 border-amber-200">
