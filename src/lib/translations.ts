@@ -43,6 +43,7 @@ export interface Translations {
     generateButton: string;
     downloadPdfButton: string;
     generatingPdf: string;
+    printButton: string;
     securityNotice: string;
     securityText: string;
   };
@@ -113,7 +114,7 @@ export const translations: Record<Language, Translations> = {
       nostrPrivateKeyDesc: '32-byte hexadecimal Nostr private key for signing',
     },
     print: {
-      title: 'Generate Print Document',
+      title: 'Print Document',
       description: 'Create an A4 document with wallets and QR codes for secure storage',
       customTextLabel: 'Text at the top (optional)',
       customTextPlaceholder: 'e.g. 100 Million Fun',
@@ -122,6 +123,7 @@ export const translations: Record<Language, Translations> = {
       generateButton: 'Generate Print Document',
       downloadPdfButton: 'Download PDF',
       generatingPdf: 'Generating PDF...',
+      printButton: 'Print',
       securityNotice: 'IMPORTANT SECURITY NOTICE:',
       securityText: 'Store this document securely in THREE separate locations. Keep it away from moisture, fire, and unauthorized access. Anyone with access to the Private Key can access your funds.',
     },
@@ -199,6 +201,7 @@ export const translations: Record<Language, Translations> = {
       generateButton: 'Generiraj dokument za tiskanje',
       downloadPdfButton: 'Prenesi PDF',
       generatingPdf: 'Generiram PDF...',
+      printButton: 'Natisni',
       securityNotice: 'POMEMBNO VARNOSTNO OBVESTILO:',
       securityText: 'Ta dokument shranjujte varno na TREH ločenih lokacijah. Hranite ga stran od vlage, ognja in nepooblaščenega dostopa. Kdorkoli ima dostop do zasebnega ključa, lahko dostopa do vaših sredstev.',
     },
@@ -267,7 +270,7 @@ export const translations: Record<Language, Translations> = {
       nostrPrivateKeyDesc: '32 bájtos hexadecimális Nostr privát kulcs aláíráshoz',
     },
     print: {
-      title: 'Nyomtatási dokumentum generálása',
+      title: 'Nyomtatási dokumentum',
       description: 'A4-es dokumentum létrehozása tárcákkal és QR kódokkal biztonságos tároláshoz',
       customTextLabel: 'Szöveg a tetején (opcionális)',
       customTextPlaceholder: 'pl. 100 millió móka',
@@ -276,6 +279,7 @@ export const translations: Record<Language, Translations> = {
       generateButton: 'Nyomtatási dokumentum generálása',
       downloadPdfButton: 'PDF letöltése',
       generatingPdf: 'PDF generálása...',
+      printButton: 'Nyomtatás',
       securityNotice: 'FONTOS BIZTONSÁGI FIGYELMEZTETÉS:',
       securityText: 'Ezt a dokumentumot biztonságosan HÁROM külön helyen tárolja. Tartsa távol nedvességtől, tűztől és jogosulatlan hozzáféréstől. Bárki, aki hozzáfér a privát kulcshoz, hozzáférhet az eszközeihez.',
     },
