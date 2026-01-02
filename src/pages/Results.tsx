@@ -258,6 +258,36 @@ const Results = () => {
               </CardContent>
             </Card>
 
+            {/* Nostr nsec ID */}
+            <Card className="bg-gradient-card border-border shadow-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Key className="h-5 w-5" />
+                  {t.results.nostrNsecId}
+                </CardTitle>
+                <CardDescription>
+                  {t.results.nostrNsecIdDesc}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
+                  <code className="flex-1 text-sm font-mono break-all">
+                    {result.nostrNsecId}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => copyToClipboard(result.nostrNsecId, t.results.nostrNsecId)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex justify-center p-4 bg-white rounded-lg">
+                  <QRCodeSVG value={result.nostrNsecId} size={200} level="H" />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Nostr Private Key */}
             <Card className="bg-gradient-card border-border shadow-primary">
               <CardHeader>

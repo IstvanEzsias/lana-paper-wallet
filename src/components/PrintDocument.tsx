@@ -79,6 +79,12 @@ const PrintDocument: React.FC<PrintDocumentProps> = ({
       hideValue: true
     },
     {
+      title: t.nostrNsecId,
+      value: result.nostrNsecId,
+      qrValue: result.nostrNsecId,
+      hideValue: true
+    },
+    {
       title: t.nostrPrivateKeyHex,
       value: result.privateKeyHex,
       qrValue: result.privateKeyHex

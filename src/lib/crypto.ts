@@ -228,12 +228,31 @@ function hexToNpub(hexPubKey: string): string {
 }
 
 /**
+ * Converts hex private key to Nostr nsec format using bech32
+ */
+function hexToNsec(privateKeyHex: string): string {
+  try {
+    // 1. Convert hex to bytes
+    const privateKeyBytes = new Uint8Array(hexToBytes(privateKeyHex));
+    
+    // 2. Convert bytes to bech32 5-bit groups
+    const words = bech32.toWords(privateKeyBytes);
+    
+    // 3. Encode with 'nsec' prefix
+    return bech32.encode('nsec', words);
+  } catch (error) {
+    throw new Error(`Failed to convert to nsec format: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
  * Main conversion function - converts WIF private key to Wallet ID and Nostr identifiers
  */
 export interface ConversionResult {
   walletId: string;
   nostrHexId: string;
   nostrNpubId: string;
+  nostrNsecId: string;
   privateKeyHex: string;
 }
 
@@ -254,11 +273,13 @@ export async function convertWifToIds(wif: string): Promise<ConversionResult> {
     // Step 4: Derive Nostr identifiers
     const nostrHexId = deriveNostrPublicKey(privateKeyHex);
     const nostrNpubId = hexToNpub(nostrHexId);
+    const nostrNsecId = hexToNsec(privateKeyHex);
     
     return {
       walletId,
       nostrHexId,
       nostrNpubId,
+      nostrNsecId,
       privateKeyHex
     };
   } catch (error) {

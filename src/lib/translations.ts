@@ -30,6 +30,8 @@ export interface Translations {
     nostrHexIdDesc: string;
     nostrNpubId: string;
     nostrNpubIdDesc: string;
+    nostrNsecId: string;
+    nostrNsecIdDesc: string;
     nostrPrivateKey: string;
     nostrPrivateKeyDesc: string;
   };
@@ -53,6 +55,7 @@ export interface Translations {
     walletId: string;
     nostrHexId: string;
     nostrNpubId: string;
+    nostrNsecId: string;
     nostrPrivateKeyHex: string;
     securityWarningTitle: string;
     securityWarningText: string;
@@ -110,6 +113,8 @@ export const translations: Record<Language, Translations> = {
       nostrHexIdDesc: '32-byte hexadecimal Nostr public key identifier',
       nostrNpubId: 'Nostr npub ID',
       nostrNpubIdDesc: 'Human-readable bech32-encoded Nostr public key (npub format)',
+      nostrNsecId: 'Nostr nsec ID',
+      nostrNsecIdDesc: 'Human-readable bech32-encoded Nostr private key (nsec format)',
       nostrPrivateKey: 'Nostr Private Key (HEX)',
       nostrPrivateKeyDesc: '32-byte hexadecimal Nostr private key for signing',
     },
@@ -133,6 +138,7 @@ export const translations: Record<Language, Translations> = {
       walletId: 'LanaCoin Wallet ID',
       nostrHexId: 'Nostr HEX ID',
       nostrNpubId: 'Nostr npub ID',
+      nostrNsecId: 'Nostr nsec ID',
       nostrPrivateKeyHex: 'Nostr Private Key (HEX)',
       securityWarningTitle: '⚠️ IMPORTANT SECURITY NOTICE ⚠️',
       securityWarningText: 'Store this document securely in THREE separate locations. Keep it away from moisture, fire, and unauthorized access. Anyone with access to the Private Key can access your funds. Never share your private key with anyone.',
@@ -188,6 +194,8 @@ export const translations: Record<Language, Translations> = {
       nostrHexIdDesc: '32-bajtni heksadecimalni Nostr javni ključ identifikator',
       nostrNpubId: 'Nostr npub ID',
       nostrNpubIdDesc: 'Človeško berljiv bech32-kodiran Nostr javni ključ (npub oblika)',
+      nostrNsecId: 'Nostr nsec ID',
+      nostrNsecIdDesc: 'Človeško berljiv bech32-kodiran Nostr zasebni ključ (nsec oblika)',
       nostrPrivateKey: 'Nostr zasebni ključ (HEX)',
       nostrPrivateKeyDesc: '32-bajtni heksadecimalni Nostr zasebni ključ za podpisovanje',
     },
@@ -211,6 +219,7 @@ export const translations: Record<Language, Translations> = {
       walletId: 'LanaCoin ID denarnice',
       nostrHexId: 'Nostr HEX ID',
       nostrNpubId: 'Nostr npub ID',
+      nostrNsecId: 'Nostr nsec ID',
       nostrPrivateKeyHex: 'Nostr zasebni ključ (HEX)',
       securityWarningTitle: '⚠️ POMEMBNO VARNOSTNO OBVESTILO ⚠️',
       securityWarningText: 'Ta dokument shranjujte varno na TREH ločenih lokacijah. Hranite ga stran od vlage, ognja in nepooblaščenega dostopa. Kdorkoli ima dostop do zasebnega ključa, lahko dostopa do vaših sredstev. Nikoli ne delite svojega zasebnega ključa z nikomer.',
@@ -266,6 +275,8 @@ export const translations: Record<Language, Translations> = {
       nostrHexIdDesc: '32 bájtos hexadecimális Nostr nyilvános kulcs azonosító',
       nostrNpubId: 'Nostr npub ID',
       nostrNpubIdDesc: 'Ember által olvasható bech32-kódolt Nostr nyilvános kulcs (npub formátum)',
+      nostrNsecId: 'Nostr nsec ID',
+      nostrNsecIdDesc: 'Ember által olvasható bech32-kódolt Nostr privát kulcs (nsec formátum)',
       nostrPrivateKey: 'Nostr privát kulcs (HEX)',
       nostrPrivateKeyDesc: '32 bájtos hexadecimális Nostr privát kulcs aláíráshoz',
     },
@@ -289,6 +300,7 @@ export const translations: Record<Language, Translations> = {
       walletId: 'LanaCoin tárca azonosító',
       nostrHexId: 'Nostr HEX ID',
       nostrNpubId: 'Nostr npub ID',
+      nostrNsecId: 'Nostr nsec ID',
       nostrPrivateKeyHex: 'Nostr privát kulcs (HEX)',
       securityWarningTitle: '⚠️ FONTOS BIZTONSÁGI FIGYELMEZTETÉS ⚠️',
       securityWarningText: 'Ezt a dokumentumot biztonságosan HÁROM külön helyen tárolja. Tartsa távol nedvességtől, tűztől és jogosulatlan hozzáféréstől. Bárki, aki hozzáfér a privát kulcshoz, hozzáférhet az eszközeihez. Soha ne ossza meg privát kulcsát senkivel.',
