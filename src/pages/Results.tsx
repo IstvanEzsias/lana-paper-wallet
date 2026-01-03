@@ -1,7 +1,7 @@
 import * as React from 'react';
-import ReactDOM from 'react-dom/client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
+import QRCode from 'qrcode';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,7 +13,7 @@ import { type ConversionResult, normalizePrivateKey } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import PrintDocument from '@/components/PrintDocument';
+import { translations } from '@/lib/translations';
 
 interface ResultsState {
   result: ConversionResult;
@@ -60,55 +60,157 @@ const Results = () => {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast({
         variant: "destructive",
-        title: "Napaka",
-        description: "Brskalnik je blokiral odpiranje okna za tisk.",
+        title: t.toasts.printError,
+        description: t.toasts.printErrorDesc,
       });
       return;
     }
 
-    const container = document.createElement('div');
-    const root = ReactDOM.createRoot(container);
-    root.render(
-      <PrintDocument
-        customText={customText}
-        result={result}
-        wifInput={wifInput}
-        showNostrData={showNostrData}
-        language={language}
-      />
+    const printT = translations[language].printDoc;
+
+    // Build cards array
+    const cards = [
+      { title: printT.lanaPrivateKey, value: wifInput },
+      { title: printT.walletId, value: result.walletId },
+    ];
+
+    if (showNostrData) {
+      cards.push(
+        { title: printT.nostrHexId, value: result.nostrHexId },
+        { title: printT.nostrNpubId, value: result.nostrNpubId },
+        { title: printT.nostrNsecId, value: result.nostrNsecId },
+        { title: printT.nostrPrivateKeyHex, value: result.privateKeyHex }
+      );
+    }
+
+    // Generate QR codes as Data URLs
+    const qrDataUrls = await Promise.all(
+      cards.map(card => 
+        QRCode.toDataURL(card.value, { 
+          width: 150, 
+          margin: 1,
+          color: { dark: '#000000', light: '#ffffff' }
+        })
+      )
     );
 
-    // Wait for render then write to print window
-    setTimeout(() => {
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>LANA Wallet</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: Arial, sans-serif; }
-            </style>
-          </head>
-          <body>
-            ${container.innerHTML}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      
-      // Wait for QR codes to render then print
-      setTimeout(() => {
-        printWindow.print();
-      }, 500);
-      
-      root.unmount();
-    }, 100);
+    // Build HTML with embedded images
+    const cardsHtml = cards.map((card, index) => `
+      <div class="card">
+        <div class="card-title">${card.title}</div>
+        <div class="card-value">${card.value}</div>
+        <img src="${qrDataUrls[index]}" alt="QR Code" class="qr-code" />
+      </div>
+    `).join('');
+
+    const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>LANA Wallet</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 20px;
+        background: white;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #333;
+      }
+      .header h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+      .custom-text {
+        font-size: 14px;
+        color: #666;
+        margin-top: 8px;
+      }
+      .cards-container {
+        display: grid;
+        grid-template-columns: ${showNostrData ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'};
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+        background: #fafafa;
+      }
+      .card-title {
+        font-weight: bold;
+        font-size: 11px;
+        margin-bottom: 8px;
+        color: #333;
+      }
+      .card-value {
+        font-family: monospace;
+        font-size: 8px;
+        word-break: break-all;
+        margin-bottom: 10px;
+        color: #555;
+        line-height: 1.3;
+      }
+      .qr-code {
+        width: 120px;
+        height: 120px;
+      }
+      .security-warning {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+      }
+      .security-warning h3 {
+        font-size: 12px;
+        margin-bottom: 8px;
+        color: #856404;
+      }
+      .security-warning p {
+        font-size: 10px;
+        color: #856404;
+        line-height: 1.4;
+      }
+      @media print {
+        body { padding: 10mm; }
+        .cards-container { gap: 10px; }
+        .card { padding: 10px; }
+        .qr-code { width: 100px; height: 100px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>${printT.walletTitle}</h1>
+      ${customText ? `<div class="custom-text">${customText}</div>` : ''}
+    </div>
+    <div class="cards-container">
+      ${cardsHtml}
+    </div>
+    <div class="security-warning">
+      <h3>${printT.securityWarningTitle}</h3>
+      <p>${printT.securityWarningText}</p>
+    </div>
+  </body>
+</html>`;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   };
 
   return (
