@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, Printer, ArrowLeft } from 'lucide-react';
+import { Copy, Key, Wallet, Hash, CheckCircle2, AlertCircle, Printer, ArrowLeft, Download } from 'lucide-react';
 import { type ConversionResult, normalizePrivateKey } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -50,6 +50,34 @@ const Results = () => {
       toast({
         title: t.toasts.copied,
         description: `${label} ${t.toasts.copiedDesc}`,
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: t.toasts.copyFailed,
+        description: t.toasts.copyFailedDesc,
+      });
+    }
+  };
+
+  const downloadQrPng = async (value: string, filename: string) => {
+    try {
+      const dataUrl = await QRCode.toDataURL(value, { 
+        width: 400, 
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+      
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `${filename}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: t.toasts.copied,
+        description: `${filename}.png`,
       });
     } catch (err) {
       toast({
@@ -261,8 +289,17 @@ const Results = () => {
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex justify-center p-4 bg-white rounded-lg">
+            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
               <QRCodeSVG value={wifInput} size={200} level="H" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadQrPng(wifInput, 'lana-private-key')}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                {t.results.downloadQr}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -291,8 +328,17 @@ const Results = () => {
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex justify-center p-4 bg-white rounded-lg">
+            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
               <QRCodeSVG value={result.walletId} size={200} level="H" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadQrPng(result.walletId, 'lanacoin-wallet-id')}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                {t.results.downloadQr}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -324,8 +370,17 @@ const Results = () => {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex justify-center p-4 bg-white rounded-lg">
+                <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
                   <QRCodeSVG value={result.nostrHexId} size={200} level="H" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadQrPng(result.nostrHexId, 'nostr-hex-id')}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {t.results.downloadQr}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -354,8 +409,17 @@ const Results = () => {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex justify-center p-4 bg-white rounded-lg">
+                <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
                   <QRCodeSVG value={result.nostrNpubId} size={200} level="H" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadQrPng(result.nostrNpubId, 'nostr-npub-id')}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {t.results.downloadQr}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -384,8 +448,17 @@ const Results = () => {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex justify-center p-4 bg-white rounded-lg">
+                <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
                   <QRCodeSVG value={result.nostrNsecId} size={200} level="H" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadQrPng(result.nostrNsecId, 'nostr-nsec-id')}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {t.results.downloadQr}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -414,8 +487,17 @@ const Results = () => {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex justify-center p-4 bg-white rounded-lg">
+                <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
                   <QRCodeSVG value={result.privateKeyHex} size={200} level="H" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadQrPng(result.privateKeyHex, 'nostr-private-key-hex')}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {t.results.downloadQr}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
