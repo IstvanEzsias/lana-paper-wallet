@@ -34,6 +34,7 @@ export interface Translations {
     nostrNsecIdDesc: string;
     nostrPrivateKey: string;
     nostrPrivateKeyDesc: string;
+    downloadQr: string;
   };
   print: {
     title: string;
@@ -117,6 +118,7 @@ export const translations: Record<Language, Translations> = {
       nostrNsecIdDesc: 'Human-readable bech32-encoded Nostr private key (nsec format)',
       nostrPrivateKey: 'Nostr Private Key (HEX)',
       nostrPrivateKeyDesc: '32-byte hexadecimal Nostr private key for signing',
+      downloadQr: 'Download QR',
     },
     print: {
       title: 'Print Document',
@@ -198,6 +200,7 @@ export const translations: Record<Language, Translations> = {
       nostrNsecIdDesc: 'Človeško berljiv bech32-kodiran Nostr zasebni ključ (nsec oblika)',
       nostrPrivateKey: 'Nostr zasebni ključ (HEX)',
       nostrPrivateKeyDesc: '32-bajtni heksadecimalni Nostr zasebni ključ za podpisovanje',
+      downloadQr: 'Prenesi QR',
     },
     print: {
       title: 'Generiraj dokument za tiskanje',
@@ -279,6 +282,7 @@ export const translations: Record<Language, Translations> = {
       nostrNsecIdDesc: 'Ember által olvasható bech32-kódolt Nostr privát kulcs (nsec formátum)',
       nostrPrivateKey: 'Nostr privát kulcs (HEX)',
       nostrPrivateKeyDesc: '32 bájtos hexadecimális Nostr privát kulcs aláíráshoz',
+      downloadQr: 'QR letöltése',
     },
     print: {
       title: 'Nyomtatási dokumentum',
