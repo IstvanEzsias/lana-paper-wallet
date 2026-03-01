@@ -288,6 +288,30 @@ export async function convertWifToIds(wif: string): Promise<ConversionResult> {
 }
 
 /**
+ * Generates a new random LanaCoin wallet (private key WIF + address)
+ */
+export async function generateNewWallet(): Promise<{ wif: string; address: string }> {
+  // 1. Generate 32 random bytes for private key
+  const privateKeyBytes = new Uint8Array(32);
+  window.crypto.getRandomValues(privateKeyBytes);
+  const privateKeyHex = bytesToHex(privateKeyBytes);
+
+  // 2. Encode as WIF with LanaCoin prefix 0xB0 (uncompressed)
+  const extendedKey = "b0" + privateKeyHex;
+  const firstHash = await sha256(extendedKey);
+  const secondHash = await sha256(firstHash);
+  const checksum = secondHash.substring(0, 8);
+  const wifHex = extendedKey + checksum;
+  const wif = base58Encode(new Uint8Array(hexToBytes(wifHex)));
+
+  // 3. Generate public key and address
+  const publicKeyHex = generatePublicKey(privateKeyHex);
+  const address = await generateLanaAddress(publicKeyHex);
+
+  return { wif, address };
+}
+
+/**
  * Validates if a string looks like a valid WIF private key
  */
 export async function isValidWifFormat(wif: string): Promise<boolean> {

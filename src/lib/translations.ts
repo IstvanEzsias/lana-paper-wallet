@@ -17,6 +17,8 @@ export interface Translations {
     showNostr: string;
     nostrInfo: string;
     convertButton: string;
+    generating: string;
+    generateButton: string;
     converting: string;
   };
   results: {
@@ -71,6 +73,8 @@ export interface Translations {
     copyFailedDesc: string;
     qrScanned: string;
     qrScannedDesc: string;
+    walletGenerated: string;
+    walletGeneratedDesc: string;
     printError: string;
     printErrorDesc: string;
     pdfSuccess: string;
@@ -101,6 +105,8 @@ export const translations: Record<Language, Translations> = {
       showNostr: 'Show NOSTR data',
       nostrInfo: 'You will only need NOSTR data if you have an account on other NOSTR platforms. Otherwise, only the LANA Private Key is sufficient, from which you can always derive NOSTR data later.',
       convertButton: 'Convert to IDs',
+      generating: 'Generating...',
+      generateButton: 'Generate Wallet',
       converting: 'Converting...',
     },
     results: {
@@ -155,6 +161,8 @@ export const translations: Record<Language, Translations> = {
       copyFailedDesc: 'Could not copy to clipboard',
       qrScanned: 'QR Code Scanned',
       qrScannedDesc: 'Private key has been read from QR code',
+      walletGenerated: 'Wallet Generated',
+      walletGeneratedDesc: 'A new wallet private key has been generated.',
       printError: 'Error',
       printErrorDesc: 'Cannot open print window. Check your browser settings.',
       pdfSuccess: 'PDF Generated',
@@ -183,6 +191,8 @@ export const translations: Record<Language, Translations> = {
       showNostr: 'Prikaži NOSTR podatke',
       nostrInfo: 'NOSTR podatke boste potrebovali le, če imate račun na drugih NOSTR platformah. V nasprotnem primeru zadostuje le LANA zasebni ključ, iz katerega lahko vedno kasneje izpeljete NOSTR podatke.',
       convertButton: 'Pretvori v ID-je',
+      generating: 'Generiram...',
+      generateButton: 'Generiraj denarnico',
       converting: 'Pretvarjam...',
     },
     results: {
@@ -237,6 +247,8 @@ export const translations: Record<Language, Translations> = {
       copyFailedDesc: 'Ni mogoče kopirati v odložišče',
       qrScanned: 'QR koda skenirana',
       qrScannedDesc: 'Zasebni ključ je bil prebran iz QR kode',
+      walletGenerated: 'Denarnica generirana',
+      walletGeneratedDesc: 'Nov zasebni ključ denarnice je bil generiran.',
       printError: 'Napaka',
       printErrorDesc: 'Ni mogoče odpreti okna za tiskanje. Preverite nastavitve brskalnika.',
       pdfSuccess: 'PDF generiran',
@@ -265,6 +277,8 @@ export const translations: Record<Language, Translations> = {
       showNostr: 'NOSTR adatok megjelenítése',
       nostrInfo: 'NOSTR adatokra csak akkor lesz szüksége, ha más NOSTR platformokon van fiókja. Egyébként csak a LANA privát kulcs elegendő, amelyből később bármikor származtathatja a NOSTR adatokat.',
       convertButton: 'Konvertálás ID-kké',
+      generating: 'Generálás...',
+      generateButton: 'Tárca generálása',
       converting: 'Konvertálás...',
     },
     results: {
@@ -319,6 +333,8 @@ export const translations: Record<Language, Translations> = {
       copyFailedDesc: 'Nem sikerült a vágólapra másolni',
       qrScanned: 'QR kód beolvasva',
       qrScannedDesc: 'Privát kulcs beolvasva a QR kódból',
+      walletGenerated: 'Tárca generálva',
+      walletGeneratedDesc: 'Új tárca privát kulcs generálva.',
       printError: 'Hiba',
       printErrorDesc: 'Nem lehet megnyitni a nyomtatási ablakot. Ellenőrizze a böngésző beállításait.',
       pdfSuccess: 'PDF generálva',
