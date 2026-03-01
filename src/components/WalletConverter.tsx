@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info } from 'lucide-react';
-import { convertWifToIds, isValidWifFormat, normalizePrivateKey } from '@/lib/crypto';
+import { Wallet, Hash, CheckCircle2, AlertCircle, ScanLine, Info, Plus } from 'lucide-react';
+import { convertWifToIds, isValidWifFormat, normalizePrivateKey, generateNewWallet } from '@/lib/crypto';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -20,6 +20,7 @@ const WalletConverter = () => {
   const [isValidInput, setIsValidInput] = React.useState<boolean | null>(null);
   const [showQRScanner, setShowQRScanner] = React.useState(false);
   const [showNostrData, setShowNostrData] = React.useState(false);
+  const [isGenerating, setIsGenerating] = React.useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -74,6 +75,24 @@ const WalletConverter = () => {
       title: t.toasts.qrScanned,
       description: t.toasts.qrScannedDesc,
     });
+  };
+
+  const handleGenerateWallet = async () => {
+    setIsGenerating(true);
+    setError('');
+    try {
+      const { wif } = await generateNewWallet();
+      setWifInput(wif);
+      toast({
+        title: t.toasts.walletGenerated,
+        description: t.toasts.walletGeneratedDesc,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Generation failed';
+      setError(errorMessage);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // Validate WIF input async
@@ -163,6 +182,15 @@ const WalletConverter = () => {
                 title={t.input.scanButton}
               >
                 <ScanLine className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleGenerateWallet}
+                disabled={isGenerating}
+                title={t.input.generateButton}
+              >
+                <Plus className="h-4 w-4" />
+                {t.input.generateButton}
               </Button>
             </div>
             {isValidInput === false && (
