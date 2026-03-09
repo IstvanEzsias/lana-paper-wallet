@@ -118,9 +118,9 @@ const Results = () => {
 
     // Generate QR codes as Data URLs
     const qrDataUrls = await Promise.all(
-      cards.map(card => 
-        QRCode.toDataURL(card.value, { 
-          width: 150, 
+      cards.map(card =>
+        QRCode.toDataURL(card.value, {
+          width: showNostrData ? 150 : 400,
           margin: 1,
           color: { dark: '#000000', light: '#ffffff' }
         })
@@ -165,33 +165,33 @@ const Results = () => {
       .cards-container {
         display: grid;
         grid-template-columns: ${showNostrData ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'};
-        gap: 15px;
+        gap: ${showNostrData ? '15px' : '30px'};
         margin-bottom: 20px;
       }
       .card {
-        border: 1px solid #ddd;
+        border: ${showNostrData ? '1px' : '2px'} solid #ddd;
         border-radius: 8px;
-        padding: 12px;
+        padding: ${showNostrData ? '12px' : '24px'};
         text-align: center;
         background: #fafafa;
       }
       .card-title {
         font-weight: bold;
-        font-size: 11px;
-        margin-bottom: 8px;
+        font-size: ${showNostrData ? '11px' : '18px'};
+        margin-bottom: ${showNostrData ? '8px' : '14px'};
         color: #333;
       }
       .card-value {
         font-family: monospace;
-        font-size: 8px;
+        font-size: ${showNostrData ? '8px' : '12px'};
         word-break: break-all;
-        margin-bottom: 10px;
+        margin-bottom: ${showNostrData ? '10px' : '20px'};
         color: #555;
         line-height: 1.3;
       }
       .qr-code {
-        width: 120px;
-        height: 120px;
+        width: ${showNostrData ? '120px' : '250px'};
+        height: ${showNostrData ? '120px' : '250px'};
       }
       .security-warning {
         background: #fff3cd;
@@ -212,9 +212,9 @@ const Results = () => {
       }
       @media print {
         body { padding: 10mm; }
-        .cards-container { gap: 10px; }
-        .card { padding: 10px; }
-        .qr-code { width: 100px; height: 100px; }
+        .cards-container { gap: ${showNostrData ? '10px' : '20px'}; }
+        .card { padding: ${showNostrData ? '10px' : '20px'}; }
+        .qr-code { width: ${showNostrData ? '100px' : '220px'}; height: ${showNostrData ? '100px' : '220px'}; }
       }
     </style>
   </head>
