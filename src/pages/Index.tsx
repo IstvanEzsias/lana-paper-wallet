@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import WalletConverter from '@/components/WalletConverter';
 import headerImage from '@/assets/lana-header.png';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,16 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <WalletConverter />
       </div>
+
+      {/* Footer */}
+      <footer className="text-center pb-6">
+        <Link
+          to="/docs"
+          className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"
+        >
+          Technical Documentation
+        </Link>
+      </footer>
     </div>
   );
 };
