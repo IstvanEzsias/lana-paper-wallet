@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   lana-paper-wallet:
     build: .
