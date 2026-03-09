@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  lana-paper-wallet:
+    build: .
+    container_name: lana-paper-wallet
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=new.lanapaper.online
+      - LETSENCRYPT_HOST=new.lanapaper.online
+      - LETSENCRYPT_EMAIL=josh@lanaworld.app
+    networks:
+      - webproxy
+
+networks:
+  webproxy:
+    external: true
