@@ -28,6 +28,14 @@ export interface Translations {
     lanaPrivateKeyDesc: string;
     walletId: string;
     walletIdDesc: string;
+    walletIdCompressed: string;
+    walletIdCompressedDesc: string;
+    walletIdUncompressed: string;
+    walletIdUncompressedDesc: string;
+    wifFormatCompressed: string;
+    wifFormatUncompressed: string;
+    primaryBadge: string;
+    secondaryBadge: string;
     nostrHexId: string;
     nostrHexIdDesc: string;
     nostrNpubId: string;
@@ -43,6 +51,7 @@ export interface Translations {
     description: string;
     customTextLabel: string;
     customTextPlaceholder: string;
+    threeCards: string;
     twoCards: string;
     fiveCards: string;
     generateButton: string;
@@ -56,6 +65,8 @@ export interface Translations {
     walletTitle: string;
     lanaPrivateKey: string;
     walletId: string;
+    walletIdCompressed: string;
+    walletIdUncompressed: string;
     nostrHexId: string;
     nostrNpubId: string;
     nostrNsecId: string;
@@ -116,6 +127,14 @@ export const translations: Record<Language, Translations> = {
       lanaPrivateKeyDesc: 'Your original LanaCoin private key in WIF format',
       walletId: 'LanaCoin Wallet ID',
       walletIdDesc: 'Your LanaCoin wallet address derived from the private key',
+      walletIdCompressed: 'Wallet ID (Compressed)',
+      walletIdCompressedDesc: 'Address derived from compressed public key (new T-format WIF)',
+      walletIdUncompressed: 'Wallet ID (Uncompressed)',
+      walletIdUncompressedDesc: 'Address derived from uncompressed public key (old 6-format WIF)',
+      wifFormatCompressed: 'Compressed WIF (T)',
+      wifFormatUncompressed: 'Uncompressed WIF (6)',
+      primaryBadge: 'Primary',
+      secondaryBadge: 'Secondary',
       nostrHexId: 'Nostr HEX ID',
       nostrHexIdDesc: '32-byte hexadecimal Nostr public key identifier',
       nostrNpubId: 'Nostr npub ID',
@@ -131,8 +150,9 @@ export const translations: Record<Language, Translations> = {
       description: 'Create an A4 document with wallets and QR codes for secure storage',
       customTextLabel: 'Text at the top (optional)',
       customTextPlaceholder: 'e.g. 100 Million Fun',
+      threeCards: 'The document will contain 3 cards: LANA Private Key and both Wallet IDs',
       twoCards: 'The document will contain 2 cards: LANA Private Key and Wallet ID',
-      fiveCards: 'The document will contain 5 cards: LANA Private Key, Wallet ID and 3 NOSTR data fields',
+      fiveCards: 'The document will contain 7 cards: LANA Private Key, both Wallet IDs and 4 NOSTR data fields',
       generateButton: 'Generate Print Document',
       downloadPdfButton: 'Download PDF',
       generatingPdf: 'Generating PDF...',
@@ -144,6 +164,8 @@ export const translations: Record<Language, Translations> = {
       walletTitle: 'LANA Wallet',
       lanaPrivateKey: 'LANA Private Key (WIF)',
       walletId: 'LanaCoin Wallet ID',
+      walletIdCompressed: 'Wallet ID (Compressed)',
+      walletIdUncompressed: 'Wallet ID (Uncompressed)',
       nostrHexId: 'Nostr HEX ID',
       nostrNpubId: 'Nostr npub ID',
       nostrNsecId: 'Nostr nsec ID',
@@ -202,6 +224,14 @@ export const translations: Record<Language, Translations> = {
       lanaPrivateKeyDesc: 'Vaš originalni LanaCoin zasebni ključ v WIF obliki',
       walletId: 'LanaCoin ID denarnice',
       walletIdDesc: 'Vaš LanaCoin naslov denarnice, izpeljan iz zasebnega ključa',
+      walletIdCompressed: 'ID denarnice (Compressed)',
+      walletIdCompressedDesc: 'Naslov izpeljan iz kompresiranega javnega ključa (novi T-format WIF)',
+      walletIdUncompressed: 'ID denarnice (Uncompressed)',
+      walletIdUncompressedDesc: 'Naslov izpeljan iz nekompresiranega javnega ključa (stari 6-format WIF)',
+      wifFormatCompressed: 'Compressed WIF (T)',
+      wifFormatUncompressed: 'Uncompressed WIF (6)',
+      primaryBadge: 'Primarni',
+      secondaryBadge: 'Sekundarni',
       nostrHexId: 'Nostr HEX ID',
       nostrHexIdDesc: '32-bajtni heksadecimalni Nostr javni ključ identifikator',
       nostrNpubId: 'Nostr npub ID',
@@ -217,8 +247,9 @@ export const translations: Record<Language, Translations> = {
       description: 'Ustvari A4 dokument z denarnicami in QR kodami za varno shranjevanje',
       customTextLabel: 'Besedilo na vrhu (opcijsko)',
       customTextPlaceholder: 'npr. 100 milijonov zabave',
+      threeCards: 'Dokument bo vseboval 3 kartice: LANA zasebni ključ in oba ID-ja denarnice',
       twoCards: 'Dokument bo vseboval 2 kartici: LANA zasebni ključ in ID denarnice',
-      fiveCards: 'Dokument bo vseboval 5 kartic: LANA zasebni ključ, ID denarnice in 3 NOSTR podatkovna polja',
+      fiveCards: 'Dokument bo vseboval 7 kartic: LANA zasebni ključ, oba ID-ja denarnice in 4 NOSTR podatkovna polja',
       generateButton: 'Generiraj dokument za tiskanje',
       downloadPdfButton: 'Prenesi PDF',
       generatingPdf: 'Generiram PDF...',
@@ -230,6 +261,8 @@ export const translations: Record<Language, Translations> = {
       walletTitle: 'LANA denarnica',
       lanaPrivateKey: 'LANA zasebni ključ (WIF)',
       walletId: 'LanaCoin ID denarnice',
+      walletIdCompressed: 'ID denarnice (Compressed)',
+      walletIdUncompressed: 'ID denarnice (Uncompressed)',
       nostrHexId: 'Nostr HEX ID',
       nostrNpubId: 'Nostr npub ID',
       nostrNsecId: 'Nostr nsec ID',
@@ -288,6 +321,14 @@ export const translations: Record<Language, Translations> = {
       lanaPrivateKeyDesc: 'Az eredeti LanaCoin privát kulcsa WIF formátumban',
       walletId: 'LanaCoin tárca azonosító',
       walletIdDesc: 'LanaCoin tárca címe, amely a privát kulcsból származik',
+      walletIdCompressed: 'Tárca azonosító (Compressed)',
+      walletIdCompressedDesc: 'Cím a tömörített nyilvános kulcsból (új T-formátumú WIF)',
+      walletIdUncompressed: 'Tárca azonosító (Uncompressed)',
+      walletIdUncompressedDesc: 'Cím a tömörítetlen nyilvános kulcsból (régi 6-formátumú WIF)',
+      wifFormatCompressed: 'Compressed WIF (T)',
+      wifFormatUncompressed: 'Uncompressed WIF (6)',
+      primaryBadge: 'Elsődleges',
+      secondaryBadge: 'Másodlagos',
       nostrHexId: 'Nostr HEX ID',
       nostrHexIdDesc: '32 bájtos hexadecimális Nostr nyilvános kulcs azonosító',
       nostrNpubId: 'Nostr npub ID',
@@ -303,8 +344,9 @@ export const translations: Record<Language, Translations> = {
       description: 'A4-es dokumentum létrehozása tárcákkal és QR kódokkal biztonságos tároláshoz',
       customTextLabel: 'Szöveg a tetején (opcionális)',
       customTextPlaceholder: 'pl. 100 millió móka',
+      threeCards: 'A dokumentum 3 kártyát fog tartalmazni: LANA privát kulcs és mindkét tárca azonosító',
       twoCards: 'A dokumentum 2 kártyát fog tartalmazni: LANA privát kulcs és tárca azonosító',
-      fiveCards: 'A dokumentum 5 kártyát fog tartalmazni: LANA privát kulcs, tárca azonosító és 3 NOSTR adat mező',
+      fiveCards: 'A dokumentum 7 kártyát fog tartalmazni: LANA privát kulcs, mindkét tárca azonosító és 4 NOSTR adat mező',
       generateButton: 'Nyomtatási dokumentum generálása',
       downloadPdfButton: 'PDF letöltése',
       generatingPdf: 'PDF generálása...',
@@ -316,6 +358,8 @@ export const translations: Record<Language, Translations> = {
       walletTitle: 'LANA tárca',
       lanaPrivateKey: 'LANA privát kulcs (WIF)',
       walletId: 'LanaCoin tárca azonosító',
+      walletIdCompressed: 'Tárca azonosító (Compressed)',
+      walletIdUncompressed: 'Tárca azonosító (Uncompressed)',
       nostrHexId: 'Nostr HEX ID',
       nostrNpubId: 'Nostr npub ID',
       nostrNsecId: 'Nostr nsec ID',
