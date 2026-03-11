@@ -43,13 +43,10 @@ const Results = () => {
 
   const { result, wifInput, showNostrData } = state;
 
-  // Determine primary and secondary wallet IDs
-  const primaryWalletId = result.isCompressed ? result.compressedWalletId : result.uncompressedWalletId;
-  const secondaryWalletId = result.isCompressed ? result.uncompressedWalletId : result.compressedWalletId;
-  const primaryLabel = result.isCompressed ? t.results.walletIdCompressed : t.results.walletIdUncompressed;
-  const primaryDesc = result.isCompressed ? t.results.walletIdCompressedDesc : t.results.walletIdUncompressedDesc;
-  const secondaryLabel = result.isCompressed ? t.results.walletIdUncompressed : t.results.walletIdCompressed;
-  const secondaryDesc = result.isCompressed ? t.results.walletIdUncompressedDesc : t.results.walletIdCompressedDesc;
+  // Determine wallet ID based on WIF format (only show the matching one)
+  const walletId = result.isCompressed ? result.compressedWalletId : result.uncompressedWalletId;
+  const walletLabel = result.isCompressed ? t.results.walletIdCompressed : t.results.walletIdUncompressed;
+  const walletDesc = result.isCompressed ? t.results.walletIdCompressedDesc : t.results.walletIdUncompressedDesc;
   const wifFormatLabel = result.isCompressed ? t.results.wifFormatCompressed : t.results.wifFormatUncompressed;
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -110,14 +107,12 @@ const Results = () => {
 
     const printT = translations[language].printDoc;
 
-    // Build cards array — always include both wallet addresses
-    const primaryWalletTitle = result.isCompressed ? printT.walletIdCompressed : printT.walletIdUncompressed;
-    const secondaryWalletTitle = result.isCompressed ? printT.walletIdUncompressed : printT.walletIdCompressed;
+    // Build cards array — one wallet address matching the WIF format
+    const walletTitle = result.isCompressed ? printT.walletIdCompressed : printT.walletIdUncompressed;
 
     const cards = [
       { title: printT.lanaPrivateKey, value: wifInput },
-      { title: primaryWalletTitle, value: primaryWalletId },
-      { title: secondaryWalletTitle, value: secondaryWalletId },
+      { title: walletTitle, value: walletId },
     ];
 
     if (showNostrData) {
@@ -129,16 +124,15 @@ const Results = () => {
       );
     }
 
-    // Determine grid columns: 3 cards without Nostr, 3+ cols with Nostr
-    const cardCount = cards.length;
-    const gridCols = showNostrData ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)';
+    // Determine grid columns: 2 cards without Nostr, 3 cols with Nostr
+    const gridCols = showNostrData ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)';
     const isSmallGrid = !showNostrData;
 
     // Generate QR codes as Data URLs
     const qrDataUrls = await Promise.all(
       cards.map(card =>
         QRCode.toDataURL(card.value, {
-          width: showNostrData ? 150 : 300,
+          width: showNostrData ? 150 : 400,
           margin: 1,
           color: { dark: '#000000', light: '#ffffff' }
         })
@@ -208,8 +202,8 @@ const Results = () => {
         line-height: 1.3;
       }
       .qr-code {
-        width: ${showNostrData ? '120px' : '180px'};
-        height: ${showNostrData ? '120px' : '180px'};
+        width: ${showNostrData ? '120px' : '250px'};
+        height: ${showNostrData ? '120px' : '250px'};
       }
       .security-warning {
         background: #fff3cd;
@@ -232,7 +226,7 @@ const Results = () => {
         body { padding: 10mm; }
         .cards-container { gap: ${showNostrData ? '10px' : '15px'}; }
         .card { padding: ${showNostrData ? '10px' : '14px'}; }
-        .qr-code { width: ${showNostrData ? '100px' : '160px'}; height: ${showNostrData ? '100px' : '160px'}; }
+        .qr-code { width: ${showNostrData ? '100px' : '220px'}; height: ${showNostrData ? '100px' : '220px'}; }
       }
     </style>
   </head>
@@ -323,77 +317,36 @@ const Results = () => {
           </CardContent>
         </Card>
 
-        {/* Primary Wallet ID */}
+        {/* Wallet ID */}
         <Card className="bg-gradient-card border-border shadow-crypto">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-crypto">
               <Wallet className="h-5 w-5" />
-              {primaryLabel}
-              <Badge variant="outline" className="bg-success/10 text-success border-success text-xs">{t.results.primaryBadge}</Badge>
+              {walletLabel}
             </CardTitle>
             <CardDescription>
-              {primaryDesc}
+              {walletDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
               <code className="flex-1 text-sm font-mono break-all">
-                {primaryWalletId}
+                {walletId}
               </code>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => copyToClipboard(primaryWalletId, primaryLabel)}
+                onClick={() => copyToClipboard(walletId, walletLabel)}
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
             <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
-              <QRCodeSVG value={primaryWalletId} size={200} level="H" />
+              <QRCodeSVG value={walletId} size={200} level="H" />
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => downloadQrPng(primaryWalletId, 'lanacoin-wallet-primary')}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {t.results.downloadQr}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Secondary Wallet ID */}
-        <Card className="bg-gradient-card border-border shadow-crypto">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-crypto">
-              <Wallet className="h-5 w-5" />
-              {secondaryLabel}
-              <Badge variant="outline" className="text-xs text-muted-foreground">{t.results.secondaryBadge}</Badge>
-            </CardTitle>
-            <CardDescription>
-              {secondaryDesc}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
-              <code className="flex-1 text-sm font-mono break-all">
-                {secondaryWalletId}
-              </code>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => copyToClipboard(secondaryWalletId, secondaryLabel)}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg">
-              <QRCodeSVG value={secondaryWalletId} size={200} level="H" />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => downloadQrPng(secondaryWalletId, 'lanacoin-wallet-secondary')}
+                onClick={() => downloadQrPng(walletId, 'lanacoin-wallet')}
                 className="gap-2"
               >
                 <Download className="h-4 w-4" />
@@ -591,7 +544,7 @@ const Results = () => {
             <p className="text-sm text-muted-foreground">
               {showNostrData
                 ? t.print.fiveCards
-                : t.print.threeCards}
+                : t.print.twoCards}
             </p>
 
             <Button 
