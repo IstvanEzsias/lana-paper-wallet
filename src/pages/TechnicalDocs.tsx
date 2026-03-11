@@ -36,8 +36,9 @@ const TechnicalDocs = () => {
           <p className="lead text-lg text-muted-foreground">
             Complete technical specifications for deriving LanaCoin wallet addresses and Nostr identifiers
             from a WIF (Wallet Import Format) private key. LanaCoin supports <strong>two WIF formats</strong>:
-            old uncompressed (prefix <code>0xB0</code>) and new compressed (prefix <code>0x41</code>).
+            Dominate (uncompressed, prefix <code>0xB0</code>) and Staking (compressed, prefix <code>0x41</code>).
             The same private key produces <strong>two different wallet addresses</strong> depending on key type.
+            <strong>The Staking format is the preferred format for new wallets.</strong>
           </p>
 
           <hr className="border-border" />
@@ -50,8 +51,8 @@ const TechnicalDocs = () => {
               <thead>
                 <tr>
                   <th>Property</th>
-                  <th>Old Format (Uncompressed)</th>
-                  <th>New Format (Compressed)</th>
+                  <th>Dominate Format (Uncompressed)</th>
+                  <th>Staking Format (Compressed) — Preferred</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,6 +100,16 @@ const TechnicalDocs = () => {
             because the public key format (compressed vs uncompressed) affects the Hash160 result.
           </p>
 
+          <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 my-4">
+            <p className="text-foreground font-medium mb-1">Recommended: Staking Format</p>
+            <p className="text-muted-foreground text-sm mb-0">
+              The <strong>Staking format</strong> (prefix <code>T</code>, version <code>0x41</code>, compressed) is the
+              preferred WIF format for LanaCoin. It uses compressed public keys which are more efficient and is the
+              standard for staking operations. The Dominate format (prefix <code>6</code>, version <code>0xB0</code>,
+              uncompressed) remains fully supported for backward compatibility.
+            </p>
+          </div>
+
           <hr className="border-border" />
 
           <h2>Key Derivation Process</h2>
@@ -119,8 +130,8 @@ const TechnicalDocs = () => {
    Verify Checksum
          |
   Detect Format:
-  0xB0 = Old Uncompressed    0x41 = New Compressed
-  (33-byte payload)          (34-byte payload, 0x01 flag)
+  0xB0 = Dominate (Uncompressed)    0x41 = Staking (Compressed) *preferred*
+  (33-byte payload)                 (34-byte payload, 0x01 flag)
          |
   Extract Private Key (32 bytes)
          |
@@ -139,8 +150,9 @@ Public Key    Public Key    Public Key
  Check     Check
     |         |
  Address   Address
- (Primary   (Secondary
-  if 0xB0)   if 0xB0)
+ (Primary    (Primary
+  if 0xB0     if 0x41
+  Dominate)   Staking)
 `}</code></pre>
 
           <hr className="border-border" />
@@ -250,8 +262,8 @@ async function wifToPrivateKey(wif) {
         }
 
         // Verify LanaCoin prefix — accept BOTH formats
-        //   0xB0 = old uncompressed (altcoin convention: 0x30 + 0x80)
-        //   0x41 = new compressed (from chainparams.cpp SECRET_KEY=65)
+        //   0xB0 = Dominate / uncompressed (altcoin convention: 0x30 + 0x80)
+        //   0x41 = Staking / compressed (from chainparams.cpp SECRET_KEY=65) *preferred*
         if (payload[0] !== 0xB0 && payload[0] !== 0x41) {
             throw new Error('Invalid LANA WIF prefix');
         }
@@ -276,8 +288,8 @@ async function wifToPrivateKey(wif) {
               <thead>
                 <tr>
                   <th>Check</th>
-                  <th>Old Format</th>
-                  <th>New Format</th>
+                  <th>Dominate Format</th>
+                  <th>Staking Format</th>
                 </tr>
               </thead>
               <tbody>
@@ -355,13 +367,13 @@ function deriveNostrPublicKey(privateKeyHex) {
                   <td>Uncompressed</td>
                   <td>65 bytes</td>
                   <td><code>04</code> + x (32 bytes) + y (32 bytes)</td>
-                  <td>Old LANA address (from <code>0xB0</code> WIF)</td>
+                  <td>Dominate LANA address (from <code>0xB0</code> WIF)</td>
                 </tr>
                 <tr>
                   <td>Compressed</td>
                   <td>33 bytes</td>
                   <td><code>02/03</code> + x (32 bytes)</td>
-                  <td>New LANA address (from <code>0x41</code> WIF)</td>
+                  <td>Staking LANA address (from <code>0x41</code> WIF) — Preferred</td>
                 </tr>
                 <tr>
                   <td>X-only</td>
@@ -478,8 +490,8 @@ async function convertWifToIds(wif) {
             The WIF format determines which is considered "primary":
           </p>
           <ul>
-            <li><strong>Old WIF (prefix <code>6</code>, version <code>0xB0</code>)</strong>: Primary = uncompressed address</li>
-            <li><strong>New WIF (prefix <code>T</code>, version <code>0x41</code>)</strong>: Primary = compressed address</li>
+            <li><strong>Dominate WIF (prefix <code>6</code>, version <code>0xB0</code>)</strong>: Primary = uncompressed address</li>
+            <li><strong>Staking WIF (prefix <code>T</code>, version <code>0x41</code>)</strong>: Primary = compressed address — <strong>Preferred format</strong></li>
           </ul>
 
           <hr className="border-border" />
@@ -497,28 +509,29 @@ async function convertWifToIds(wif) {
 
           <h2>Usage Examples</h2>
 
-          <h4>Old Format WIF (Uncompressed)</h4>
-          <pre><code className="language-javascript">{`async function exampleOldFormat() {
-    // Old WIF starts with '6', prefix 0xB0, 51 characters
+          <h4>Dominate Format WIF (Uncompressed)</h4>
+          <pre><code className="language-javascript">{`async function exampleDominateFormat() {
+    // Dominate WIF starts with '6', prefix 0xB0, 51 characters
     const wif = "6v7y8KLxbYtvcp1PRQXLQBX5778cHVtvhfyjZorLsxp8P9MS97";
 
     const result = await convertWifToIds(wif);
 
-    console.log("Format: Uncompressed (old)");
+    console.log("Format: Dominate (uncompressed)");
     console.log("isCompressed:", result.isCompressed);  // false
     console.log("Primary Address:", result.walletId);    // uncompressed
     console.log("Compressed Address:", result.compressedWalletId);
     console.log("Uncompressed Address:", result.uncompressedWalletId);
 }`}</code></pre>
 
-          <h4>New Format WIF (Compressed)</h4>
-          <pre><code className="language-javascript">{`async function exampleNewFormat() {
-    // New WIF starts with 'T', prefix 0x41, 52 characters
-    const wif = "TnR2B1cM3TnR..."; // example compressed WIF
+          <h4>Staking Format WIF (Compressed) — Preferred</h4>
+          <pre><code className="language-javascript">{`async function exampleStakingFormat() {
+    // Staking WIF starts with 'T', prefix 0x41, 52 characters
+    // This is the PREFERRED format for new wallets
+    const wif = "TnR2B1cM3TnR..."; // example Staking WIF
 
     const result = await convertWifToIds(wif);
 
-    console.log("Format: Compressed (new)");
+    console.log("Format: Staking (compressed) — preferred");
     console.log("isCompressed:", result.isCompressed);  // true
     console.log("Primary Address:", result.walletId);    // compressed
     console.log("Compressed Address:", result.compressedWalletId);
@@ -553,8 +566,9 @@ Private Key (HEX):          64-character hexadecimal string`}</code></pre>
             <li>Base58 encoding follows Bitcoin standards (Base58Check)</li>
             <li>Bech32 encoding follows <strong>BIP-173</strong> standards (for Nostr keys)</li>
             <li>LanaCoin uses version byte <code>0x30</code> (48) for addresses and <code>0xB0</code>/<code>0x41</code> for WIF</li>
-            <li>The <code>0xB0</code> prefix follows altcoin convention: address version (<code>0x30</code>) + <code>0x80</code></li>
-            <li>The <code>0x41</code> prefix comes from <code>chainparams.cpp SECRET_KEY=65</code></li>
+            <li>The <code>0xB0</code> (Dominate) prefix follows altcoin convention: address version (<code>0x30</code>) + <code>0x80</code></li>
+            <li>The <code>0x41</code> (Staking) prefix comes from <code>chainparams.cpp SECRET_KEY=65</code></li>
+            <li>The <strong>Staking format (<code>0x41</code>) is the preferred format</strong> for new wallets — it uses compressed public keys which are smaller and more efficient</li>
             <li>Nostr x-only public keys are derived identically regardless of WIF format</li>
           </ul>
         </article>
