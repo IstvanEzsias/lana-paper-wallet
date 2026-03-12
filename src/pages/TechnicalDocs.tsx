@@ -64,7 +64,7 @@ const TechnicalDocs = () => {
                 <tr>
                   <td><strong>Starts with</strong></td>
                   <td><code>6</code></td>
-                  <td><code>T</code></td>
+                  <td><code>A</code></td>
                 </tr>
                 <tr>
                   <td><strong>Length</strong></td>
@@ -103,10 +103,10 @@ const TechnicalDocs = () => {
           <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 my-4">
             <p className="text-foreground font-medium mb-1">Recommended: Staking Format</p>
             <p className="text-muted-foreground text-sm mb-0">
-              The <strong>Staking format</strong> (prefix <code>T</code>, version <code>0x41</code>, compressed) is the
+              The <strong>Staking format</strong> (prefix <code>A</code>, version <code>0x41</code>, compressed) is the
               preferred WIF format for LanaCoin. It uses compressed public keys which are more efficient and is the
               standard for staking operations. The Dominate format (prefix <code>6</code>, version <code>0xB0</code>,
-              uncompressed) remains fully supported for backward compatibility.
+              uncompressed) remains fully supported for backward compatibility. Dominate keys start with <code>6</code>, Staking keys start with <code>A</code>.
             </p>
           </div>
 
@@ -491,7 +491,7 @@ async function convertWifToIds(wif) {
           </p>
           <ul>
             <li><strong>Dominate WIF (prefix <code>6</code>, version <code>0xB0</code>)</strong>: Primary = uncompressed address</li>
-            <li><strong>Staking WIF (prefix <code>T</code>, version <code>0x41</code>)</strong>: Primary = compressed address — <strong>Preferred format</strong></li>
+            <li><strong>Staking WIF (prefix <code>A</code>, version <code>0x41</code>)</strong>: Primary = compressed address — <strong>Preferred format</strong></li>
           </ul>
 
           <hr className="border-border" />
@@ -525,7 +525,7 @@ async function convertWifToIds(wif) {
 
           <h4>Staking Format WIF (Compressed) — Preferred</h4>
           <pre><code className="language-javascript">{`async function exampleStakingFormat() {
-    // Staking WIF starts with 'T', prefix 0x41, 52 characters
+    // Staking WIF starts with 'A', prefix 0x41, 52 characters
     // This is the PREFERRED format for new wallets
     const wif = "TnR2B1cM3TnR..."; // example Staking WIF
 
