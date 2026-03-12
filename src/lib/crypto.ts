@@ -344,8 +344,8 @@ export async function generateNewWallet(): Promise<{ wif: string; address: strin
   window.crypto.getRandomValues(privateKeyBytes);
   const privateKeyHex = bytesToHex(privateKeyBytes);
 
-  // 2. Encode as WIF with LanaCoin prefix 0x41 (Staking / compressed)
-  const extendedKey = "41" + privateKeyHex + "01"; // 0x01 = compression flag
+  // 2. Encode as WIF with LanaCoin prefix 0xB0 + compression flag 0x01 (Staking, starts with T)
+  const extendedKey = "b0" + privateKeyHex + "01";
   const firstHash = await sha256(extendedKey);
   const secondHash = await sha256(firstHash);
   const checksum = secondHash.substring(0, 8);
