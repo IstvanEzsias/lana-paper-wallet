@@ -22,6 +22,14 @@ const TechnicalDocs = () => {
             <FileCode2 className="h-5 w-5" />
             <span className="text-sm font-medium">Technical Documentation</span>
           </div>
+          <div className="ml-auto">
+            <a
+              href="/generate.html"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Standalone Generator
+            </a>
+          </div>
         </div>
 
         {/* Documentation content */}

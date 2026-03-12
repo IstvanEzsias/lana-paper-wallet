@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LanaCoin Wallet Generator</title>
+  <link rel="icon" href="/favicon.ico">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 640px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: #f8fafc;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+    .card-value {
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 0.85rem;
+      word-break: break-all;
+      color: #f1f5f9;
+      background: #0f172a;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      position: relative;
+      min-height: 2.5rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .badge-staking {
+      background: #7c3aed;
+      color: #fff;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: #7c3aed;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #6d28d9;
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+    .btn-copy {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #334155;
+      color: #94a3b8;
+      border: none;
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover {
+      background: #475569;
+      color: #f1f5f9;
+    }
+    .btn-copy.copied {
+      background: #059669;
+      color: #fff;
+    }
+    .result-section {
+      display: none;
+    }
+    .result-section.visible {
+      display: block;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 2rem;
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+    .footer a {
+      color: #7c3aed;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    .warning {
+      background: #451a03;
+      border: 1px solid #92400e;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: #fbbf24;
+      line-height: 1.5;
+    }
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    .spinner.active { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>LanaCoin Wallet Generator</h1>
+    <p class="subtitle">Generate a new Staking format wallet (WIF prefix T)</p>
+
+    <button class="btn btn-primary" id="generateBtn" onclick="handleGenerate()">
+      <span class="spinner" id="spinner"></span>
+      <span id="btnText">Generate New Wallet</span>
+    </button>
+
+    <div class="result-section" id="results">
+      <div class="card" style="margin-top: 1rem;">
+        <div class="card-label">
+          LANA Private Key (WIF)
+          <span class="badge badge-staking">Staking WIF (T)</span>
+        </div>
+        <div class="card-value">
+          <span id="wifValue"></span>
+          <button class="btn-copy" onclick="copyToClipboard('wifValue', this)">Copy</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">LanaCoin Wallet Address</div>
+        <div class="card-value">
+          <span id="addressValue"></span>
+          <button class="btn-copy" onclick="copyToClipboard('addressValue', this)">Copy</button>
+        </div>
+      </div>
+
+      <div class="warning">
+        &#9888; <strong>IMPORTANT:</strong> Save your private key securely. Anyone with access to the private key can access your funds. Store it in multiple secure locations away from moisture, fire, and unauthorized access. Never share your private key with anyone.
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><a href="/docs">Technical Documentation</a></p>
+      <p style="margin-top: 0.5rem;">LANA Paper Wallet &mdash; lanapaper.online</p>
+    </div>
+  </div>
+
+  <script>
+    // ===== Crypto functions (ported from crypto.ts) =====
+
+    const ec = new elliptic.ec('secp256k1');
+
+    function hexToBytes(hex) {
+      const bytes = [];
+      for (let i = 0; i < hex.length; i += 2) {
+        bytes.push(parseInt(hex.substr(i, 2), 16));
+      }
+      return bytes;
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    }
+
+    async function sha256(hex) {
+      const bytes = hexToBytes(hex);
+      const buffer = new Uint8Array(bytes);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+      return bytesToHex(new Uint8Array(hashBuffer));
+    }
+
+    function ripemd160(data) {
+      return CryptoJS.RIPEMD160(CryptoJS.enc.Hex.parse(data)).toString();
+    }
+
+    function base58Encode(bytes) {
+      const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+      const byteArray = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+      let num = BigInt('0x' + bytesToHex(byteArray));
+      let encoded = "";
+      while (num > 0n) {
+        let remainder = num % 58n;
+        num = num / 58n;
+        encoded = alphabet[Number(remainder)] + encoded;
+      }
+      for (const byte of byteArray) {
+        if (byte !== 0) break;
+        encoded = '1' + encoded;
+      }
+      return encoded;
+    }
+
+    function generateCompressedPublicKey(privateKeyHex) {
+      const keyPair = ec.keyFromPrivate(privateKeyHex);
+      const pubKeyPoint = keyPair.getPublic();
+      const yBN = pubKeyPoint.getY();
+      const prefix = yBN.isEven() ? "02" : "03";
+      return prefix + pubKeyPoint.getX().toString(16).padStart(64, '0');
+    }
+
+    async function generateLanaAddress(publicKeyHex) {
+      const sha256Hash = await sha256(publicKeyHex);
+      const hash160 = ripemd160(sha256Hash);
+      const versionedPayload = "30" + hash160;
+      const firstHash = await sha256(versionedPayload);
+      const checksum = await sha256(firstHash);
+      const finalAddress = base58Encode(new Uint8Array(hexToBytes(versionedPayload + checksum.substring(0, 8))));
+      return finalAddress;
+    }
+
+    async function generateNewWallet() {
+      // 1. Generate 32 random bytes for private key
+      const privateKeyBytes = new Uint8Array(32);
+      crypto.getRandomValues(privateKeyBytes);
+      const privateKeyHex = bytesToHex(privateKeyBytes);
+
+      // 2. Encode as WIF with LanaCoin prefix 0xB0 + compression flag 0x01 (Staking, starts with T)
+      const extendedKey = "b0" + privateKeyHex + "01";
+      const firstHash = await sha256(extendedKey);
+      const secondHash = await sha256(firstHash);
+      const checksum = secondHash.substring(0, 8);
+      const wifHex = extendedKey + checksum;
+      const wif = base58Encode(new Uint8Array(hexToBytes(wifHex)));
+
+      // 3. Generate compressed public key and address
+      const publicKeyHex = generateCompressedPublicKey(privateKeyHex);
+      const address = await generateLanaAddress(publicKeyHex);
+
+      return { wif: wif, address: address };
+    }
+
+    // ===== UI functions =====
+
+    async function handleGenerate() {
+      const btn = document.getElementById('generateBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+
+      btn.disabled = true;
+      spinner.classList.add('active');
+      btnText.textContent = 'Generating...';
+
+      try {
+        const result = await generateNewWallet();
+
+        document.getElementById('wifValue').textContent = result.wif;
+        document.getElementById('addressValue').textContent = result.address;
+        document.getElementById('results').classList.add('visible');
+      } catch (err) {
+        alert('Error generating wallet: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        spinner.classList.remove('active');
+        btnText.textContent = 'Generate New Wallet';
+      }
+    }
+
+    function copyToClipboard(elementId, btn) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
