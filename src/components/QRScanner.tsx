@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BrowserQRCodeReader } from '@zxing/browser';
+import { DecodeHintType } from '@zxing/library';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, X } from 'lucide-react';
@@ -21,7 +22,15 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
     const startScanning = async () => {
       try {
         setIsScanning(true);
-        const codeReader = new BrowserQRCodeReader();
+
+        // TRY_HARDER: spend more effort finding the QR pattern in low contrast images
+        // ALSO_INVERT: try reading both normal and inverted — engraved metal cards
+        //              can appear "reversed" (light on dark) to the decoder
+        const hints = new Map();
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        hints.set(DecodeHintType.ALSO_INVERT, true);
+
+        const codeReader = new BrowserQRCodeReader(hints, { delayBetweenScanAttempts: 100 });
         readerRef.current = codeReader;
 
         if (videoRef.current) {
