@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BrowserQRCodeReader } from '@zxing/browser';
-import { DecodeHintType } from '@zxing/library';
+import QrScanner from 'qr-scanner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, X } from 'lucide-react';
@@ -12,54 +11,36 @@ interface QRScannerProps {
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerRef = useRef<QrScanner | null>(null);
   const [error, setError] = useState<string>('');
   const [isScanning, setIsScanning] = useState(false);
-  const readerRef = useRef<BrowserQRCodeReader | null>(null);
 
   useEffect(() => {
-    let controls: any = null;
-
     const startScanning = async () => {
+      if (!videoRef.current) return;
+
       try {
+        // qr-scanner by Nimiq — purpose-built for difficult QR codes.
+        // It applies image processing and contrast enhancement internally,
+        // making it far more reliable for engraved/low-contrast metal cards.
+        const scanner = new QrScanner(
+          videoRef.current,
+          (result) => {
+            onScan(result.data);
+            scanner.stop();
+          },
+          {
+            preferredCamera: 'environment',   // back camera on mobile, any on desktop
+            highlightScanRegion: true,        // shows scan region overlay
+            highlightCodeOutline: true,       // highlights detected QR outline
+            maxScansPerSecond: 15,            // scan aggressively for low-contrast codes
+          }
+        );
+
+        scannerRef.current = scanner;
+        await scanner.start();
         setIsScanning(true);
-
-        // TRY_HARDER: spend more effort finding the QR pattern in low contrast images
-        // ALSO_INVERT: try reading both normal and inverted — engraved metal cards
-        //              can appear "reversed" (light on dark) to the decoder
-        const hints = new Map();
-        hints.set(DecodeHintType.TRY_HARDER, true);
-        hints.set(DecodeHintType.ALSO_INVERT, true);
-
-        const codeReader = new BrowserQRCodeReader(hints, { delayBetweenScanAttempts: 100 });
-        readerRef.current = codeReader;
-
-        if (videoRef.current) {
-          // Use decodeFromConstraints instead of listVideoInputDevices:
-          // - Works on iOS Safari (no pre-enumeration needed)
-          // - facingMode 'environment' = back camera on mobile, any camera on desktop
-          // - Higher resolution (1280x720) helps read engraved/low-contrast QR codes
-          controls = await codeReader.decodeFromConstraints(
-            {
-              video: {
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-              },
-            },
-            videoRef.current,
-            (result, error) => {
-              if (result) {
-                onScan(result.getText());
-                if (controls) {
-                  controls.stop();
-                }
-              }
-              if (error && !(error instanceof Error && error.name === 'NotFoundException')) {
-                console.error('QR scan error:', error);
-              }
-            }
-          );
-        }
+        setError('');
       } catch (err) {
         console.error('Error starting QR scanner:', err);
         setError('Napaka pri zagonu kamere. Preverite dovoljenja.');
@@ -69,10 +50,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
     startScanning();
 
     return () => {
-      if (controls) {
-        controls.stop();
+      if (scannerRef.current) {
+        scannerRef.current.stop();
+        scannerRef.current.destroy();
+        scannerRef.current = null;
       }
-      setIsScanning(false);
     };
   }, [onScan]);
 
