@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import QrScanner from 'qr-scanner';
+import jsQR from 'jsqr';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, X } from 'lucide-react';
@@ -14,17 +14,17 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const hasScannnedRef = useRef(false);
+  const hasScannedRef = useRef(false);
   const [error, setError] = useState<string>('');
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    hasScannnedRef.current = false;
+    hasScannedRef.current = false;
 
-    const scanFrame = async () => {
+    const scanFrame = () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas || video.readyState < 2 || hasScannnedRef.current) {
+      if (!video || !canvas || video.readyState < 2 || hasScannedRef.current) {
         animFrameRef.current = requestAnimationFrame(scanFrame);
         return;
       }
@@ -35,25 +35,27 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // Preprocessing: grayscale + high contrast + slight brightness boost.
-      // This neutralises glare and metal reflections before the decoder sees
-      // the image, making engraved QR codes much easier to read.
+      // Preprocessing: grayscale + high contrast + brightness boost.
+      // Neutralises glare and metallic reflections so jsQR sees a clean
+      // black/white image regardless of the surface material.
       ctx.filter = 'grayscale(100%) contrast(220%) brightness(115%)';
       ctx.drawImage(video, 0, 0);
 
-      try {
-        const result = await QrScanner.scanImage(canvas, {
-          returnDetailedScanResult: true,
-        });
-        if (!hasScannnedRef.current) {
-          hasScannnedRef.current = true;
-          onScan(result.data);
-        }
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // jsQR: pure JavaScript QR decoder — no WASM, no worker, works on
+      // all browsers including older Android Chrome and iOS Safari.
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'attemptBoth', // try normal AND inverted (for dark metal)
+      });
+
+      if (code && !hasScannedRef.current) {
+        hasScannedRef.current = true;
+        onScan(code.data);
         return;
-      } catch {
-        // No QR found in this frame — keep scanning
-        animFrameRef.current = requestAnimationFrame(scanFrame);
       }
+
+      animFrameRef.current = requestAnimationFrame(scanFrame);
     };
 
     const startCamera = async () => {
@@ -61,8 +63,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
           },
         });
 
@@ -117,7 +119,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
               playsInline
               muted
             />
-            {/* Hidden canvas used for contrast preprocessing before scanning */}
+            {/* Hidden canvas used for contrast preprocessing before decoding */}
             <canvas ref={canvasRef} className="hidden" />
             {isScanning && (
               <div className="absolute inset-0 border-2 border-primary/50 rounded-lg">
