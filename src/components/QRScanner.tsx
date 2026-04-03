@@ -24,19 +24,19 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         const codeReader = new BrowserQRCodeReader();
         readerRef.current = codeReader;
 
-        const videoInputDevices = await BrowserQRCodeReader.listVideoInputDevices();
-        
-        if (videoInputDevices.length === 0) {
-          setError('Ni najdene nobene kamere');
-          return;
-        }
-
-        // Use the first available camera (usually back camera on mobile)
-        const selectedDeviceId = videoInputDevices[0].deviceId;
-
         if (videoRef.current) {
-          controls = await codeReader.decodeFromVideoDevice(
-            selectedDeviceId,
+          // Use decodeFromConstraints instead of listVideoInputDevices:
+          // - Works on iOS Safari (no pre-enumeration needed)
+          // - facingMode 'environment' = back camera on mobile, any camera on desktop
+          // - Higher resolution (1280x720) helps read engraved/low-contrast QR codes
+          controls = await codeReader.decodeFromConstraints(
+            {
+              video: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              },
+            },
             videoRef.current,
             (result, error) => {
               if (result) {
