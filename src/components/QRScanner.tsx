@@ -11,49 +11,82 @@ interface QRScannerProps {
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const scannerRef = useRef<QrScanner | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const hasScannnedRef = useRef(false);
   const [error, setError] = useState<string>('');
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    const startScanning = async () => {
-      if (!videoRef.current) return;
+    hasScannnedRef.current = false;
+
+    const scanFrame = async () => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || video.readyState < 2 || hasScannnedRef.current) {
+        animFrameRef.current = requestAnimationFrame(scanFrame);
+        return;
+      }
+
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Preprocessing: grayscale + high contrast + slight brightness boost.
+      // This neutralises glare and metal reflections before the decoder sees
+      // the image, making engraved QR codes much easier to read.
+      ctx.filter = 'grayscale(100%) contrast(220%) brightness(115%)';
+      ctx.drawImage(video, 0, 0);
 
       try {
-        // qr-scanner by Nimiq — purpose-built for difficult QR codes.
-        // It applies image processing and contrast enhancement internally,
-        // making it far more reliable for engraved/low-contrast metal cards.
-        const scanner = new QrScanner(
-          videoRef.current,
-          (result) => {
-            onScan(result.data);
-            scanner.stop();
-          },
-          {
-            preferredCamera: 'environment',   // back camera on mobile, any on desktop
-            highlightScanRegion: true,        // shows scan region overlay
-            highlightCodeOutline: true,       // highlights detected QR outline
-            maxScansPerSecond: 15,            // scan aggressively for low-contrast codes
-          }
-        );
+        const result = await QrScanner.scanImage(canvas, {
+          returnDetailedScanResult: true,
+        });
+        if (!hasScannnedRef.current) {
+          hasScannnedRef.current = true;
+          onScan(result.data);
+        }
+        return;
+      } catch {
+        // No QR found in this frame — keep scanning
+        animFrameRef.current = requestAnimationFrame(scanFrame);
+      }
+    };
 
-        scannerRef.current = scanner;
-        await scanner.start();
-        setIsScanning(true);
-        setError('');
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        });
+
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setIsScanning(true);
+          setError('');
+          animFrameRef.current = requestAnimationFrame(scanFrame);
+        }
       } catch (err) {
-        console.error('Error starting QR scanner:', err);
+        console.error('Camera error:', err);
         setError('Napaka pri zagonu kamere. Preverite dovoljenja.');
       }
     };
 
-    startScanning();
+    startCamera();
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop();
-        scannerRef.current.destroy();
-        scannerRef.current = null;
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
       }
     };
   }, [onScan]);
@@ -66,11 +99,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
             <Camera className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">Skeniraj QR kodo</h3>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -81,11 +110,15 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
           </div>
         ) : (
           <div className="relative aspect-square bg-background rounded-lg overflow-hidden">
+            {/* Live video shown to the user */}
             <video
               ref={videoRef}
               className="w-full h-full object-cover"
               playsInline
+              muted
             />
+            {/* Hidden canvas used for contrast preprocessing before scanning */}
+            <canvas ref={canvasRef} className="hidden" />
             {isScanning && (
               <div className="absolute inset-0 border-2 border-primary/50 rounded-lg">
                 <div className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-primary" />
