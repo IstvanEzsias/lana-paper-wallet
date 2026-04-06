@@ -21,60 +21,26 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   useEffect(() => {
     hasScannedRef.current = false;
 
-    // Adaptive threshold using an integral image — O(width × height).
-    //
-    // Unlike global contrast which struggles at distance, adaptive threshold
-    // compares each pixel to its LOCAL neighbourhood average. This means:
-    // - Works at any distance (near or far)
-    // - Handles glare and shadows in different parts of the frame
-    // - Produces a clean black/white image regardless of lighting conditions
-    const applyAdaptiveThreshold = (imageData: ImageData): ImageData => {
-      const { data, width, height } = imageData;
-      const S = 12; // half-size of local neighbourhood window
+    // Process width/height — we always render to this fixed size regardless
+    // of what the camera gives us. Capturing at 1080p but processing at 720p
+    // gives better sensor data (1080p→720p downscale averages pixels = less
+    // noise, sharper edges) without the CPU cost of processing at full 1080p.
+    const PW = 1280;
+    const PH = 720;
 
-      // Step 1 — convert to grayscale
-      const gray = new Uint8Array(width * height);
-      for (let i = 0, j = 0; j < data.length; i++, j += 4) {
-        gray[i] = (0.299 * data[j] + 0.587 * data[j + 1] + 0.114 * data[j + 2]) | 0;
+    const applyPreprocessing = (imageData: ImageData): ImageData => {
+      const data = imageData.data;
+      // Contrast 1.5 (not 1.9) — less aggressive so small distant modules
+      // keep their edge detail instead of being clipped to pure black/white
+      const contrast = 1.5;
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) | 0;
+        const val = Math.max(0, Math.min(255, (gray - 128) * contrast + 128));
+        data[i] = data[i + 1] = data[i + 2] = val;
       }
-
-      // Step 2 — build integral image for O(1) local sum lookups
-      const integral = new Int32Array((width + 1) * (height + 1));
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          integral[(y + 1) * (width + 1) + (x + 1)] =
-            gray[y * width + x] +
-            integral[y * (width + 1) + (x + 1)] +
-            integral[(y + 1) * (width + 1) + x] -
-            integral[y * (width + 1) + x];
-        }
-      }
-
-      // Step 3 — threshold each pixel against its local mean
-      for (let y = 0; y < height; y++) {
-        const y1 = Math.max(0, y - S);
-        const y2 = Math.min(height - 1, y + S);
-        for (let x = 0; x < width; x++) {
-          const x1 = Math.max(0, x - S);
-          const x2 = Math.min(width - 1, x + S);
-          const count = (y2 - y1 + 1) * (x2 - x1 + 1);
-          const sum =
-            integral[(y2 + 1) * (width + 1) + (x2 + 1)] -
-            integral[y1 * (width + 1) + (x2 + 1)] -
-            integral[(y2 + 1) * (width + 1) + x1] +
-            integral[y1 * (width + 1) + x1];
-          const val = gray[y * width + x] < (sum / count) * 0.88 ? 0 : 255;
-          const j = (y * width + x) * 4;
-          data[j] = data[j + 1] = data[j + 2] = val;
-        }
-      }
-
       return imageData;
     };
 
-    // Scans one region of the video frame.
-    // By cropping and scaling up to full canvas size we get digital zoom —
-    // the QR code fills more pixels, so jsQR can decode from farther away.
     const scanRegion = (
       ctx: CanvasRenderingContext2D,
       canvas: HTMLCanvasElement,
@@ -88,13 +54,14 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       const sw = vw * (1 - 2 * marginFraction);
       const sh = vh * (1 - 2 * marginFraction);
 
-      canvas.width = vw;
-      canvas.height = vh;
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, vw, vh);
+      // Always output at fixed PW×PH — downscales 1080p to 720p automatically
+      canvas.width = PW;
+      canvas.height = PH;
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, PW, PH);
 
-      const imageData = applyAdaptiveThreshold(ctx.getImageData(0, 0, vw, vh));
+      const imageData = applyPreprocessing(ctx.getImageData(0, 0, PW, PH));
 
-      return jsQR(imageData.data, imageData.width, imageData.height, {
+      return jsQR(imageData.data, PW, PH, {
         inversionAttempts: 'attemptBoth',
       });
     };
@@ -131,8 +98,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
           },
         });
 
