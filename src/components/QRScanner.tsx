@@ -21,6 +21,36 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   useEffect(() => {
     hasScannedRef.current = false;
 
+    // Scans one region of the video frame.
+    // By cropping and scaling up to full canvas size we get digital zoom —
+    // the QR code fills more pixels, so jsQR can decode from farther away.
+    const scanRegion = (
+      ctx: CanvasRenderingContext2D,
+      canvas: HTMLCanvasElement,
+      video: HTMLVideoElement,
+      marginFraction: number  // 0 = full frame, 0.25 = center 50% scaled 2x
+    ): ReturnType<typeof jsQR> | null => {
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const sx = vw * marginFraction;
+      const sy = vh * marginFraction;
+      const sw = vw * (1 - 2 * marginFraction);
+      const sh = vh * (1 - 2 * marginFraction);
+
+      // Always output at full canvas size — this is the digital zoom effect
+      canvas.width = vw;
+      canvas.height = vh;
+
+      // Grayscale + contrast boost neutralises glare on metallic surfaces
+      ctx.filter = 'grayscale(100%) contrast(190%) brightness(110%)';
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, vw, vh);
+
+      const imageData = ctx.getImageData(0, 0, vw, vh);
+      return jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'attemptBoth',
+      });
+    };
+
     const scanFrame = () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -32,22 +62,14 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      // Preprocessing: grayscale + high contrast + brightness boost.
-      // Neutralises glare and metallic reflections so jsQR sees a clean
-      // black/white image regardless of the surface material.
-      ctx.filter = 'grayscale(100%) contrast(220%) brightness(115%)';
-      ctx.drawImage(video, 0, 0);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-      // jsQR: pure JavaScript QR decoder — no WASM, no worker, works on
-      // all browsers including older Android Chrome and iOS Safari.
-      const code = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: 'attemptBoth', // try normal AND inverted (for dark metal)
-      });
+      // Try 3 zoom levels per frame:
+      // 0.00 = full frame       (card close up or filling frame)
+      // 0.17 = center 66% → 1.5x zoom (card at medium distance)
+      // 0.25 = center 50% → 2x zoom   (card farther away)
+      const code =
+        scanRegion(ctx, canvas, video, 0.00) ||
+        scanRegion(ctx, canvas, video, 0.17) ||
+        scanRegion(ctx, canvas, video, 0.25);
 
       if (code && !hasScannedRef.current) {
         hasScannedRef.current = true;
