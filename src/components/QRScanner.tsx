@@ -21,6 +21,24 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   useEffect(() => {
     hasScannedRef.current = false;
 
+    // Applies grayscale + contrast + brightness via direct pixel manipulation.
+    // More compatible than ctx.filter which silently does nothing on some
+    // Android Chrome versions.
+    const applyPreprocessing = (imageData: ImageData): ImageData => {
+      const data = imageData.data;
+      const contrast = 1.9;  // 190%
+      const brightness = 1.1; // 110%
+      for (let i = 0; i < data.length; i += 4) {
+        // Grayscale (luminance weighted)
+        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        // Brightness then contrast centred on 128
+        const val = Math.max(0, Math.min(255, (gray * brightness - 128) * contrast + 128));
+        data[i] = data[i + 1] = data[i + 2] = val;
+        // alpha (data[i+3]) unchanged
+      }
+      return imageData;
+    };
+
     // Scans one region of the video frame.
     // By cropping and scaling up to full canvas size we get digital zoom —
     // the QR code fills more pixels, so jsQR can decode from farther away.
@@ -41,11 +59,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       canvas.width = vw;
       canvas.height = vh;
 
-      // Grayscale + contrast boost neutralises glare on metallic surfaces
-      ctx.filter = 'grayscale(100%) contrast(190%) brightness(110%)';
+      ctx.filter = 'none'; // reset any inherited filter
       ctx.drawImage(video, sx, sy, sw, sh, 0, 0, vw, vh);
 
-      const imageData = ctx.getImageData(0, 0, vw, vh);
+      // Apply preprocessing in pure JS — works on all browsers including Android
+      const imageData = applyPreprocessing(ctx.getImageData(0, 0, vw, vh));
+
       return jsQR(imageData.data, imageData.width, imageData.height, {
         inversionAttempts: 'attemptBoth',
       });
