@@ -81,16 +81,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      // Try 4 zoom levels per frame:
-      // 0.00 = full frame            (card filling frame / very close)
-      // 0.17 = center 66% → 1.5x    (card at medium distance)
-      // 0.25 = center 50% → 2x      (card farther away)
-      // 0.33 = center 33% → 3x      (card at full arm's length)
+      // Try 2 zoom levels per frame — keeps mobile CPU load manageable:
+      // 0.00 = full frame       (card close / filling frame)
+      // 0.25 = center 50% → 2x (card at medium/far distance)
       const code =
         scanRegion(ctx, canvas, video, 0.00) ||
-        scanRegion(ctx, canvas, video, 0.17) ||
-        scanRegion(ctx, canvas, video, 0.25) ||
-        scanRegion(ctx, canvas, video, 0.33);
+        scanRegion(ctx, canvas, video, 0.25);
 
       if (code && !hasScannedRef.current) {
         hasScannedRef.current = true;
@@ -103,31 +99,15 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
 
     const startCamera = async () => {
       try {
-        // Request high resolution — more pixels = readable from farther away.
-        // Phones have 12-50MP sensors; 1920x1080 uses much more of the sensor
-        // than 720p, giving ~2.5x more pixels per QR module at any distance.
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
           },
         });
 
         streamRef.current = stream;
-
-        // Attempt hardware zoom (supported on Android Chrome, ignored elsewhere).
-        // zoom: 2 doubles the effective reading distance without any processing cost.
-        try {
-          const track = stream.getVideoTracks()[0];
-          const capabilities = track.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number } };
-          if (capabilities.zoom) {
-            const maxZoom = Math.min(capabilities.zoom.max, 2);
-            await track.applyConstraints({ advanced: [{ zoom: maxZoom } as MediaTrackConstraintSet] });
-          }
-        } catch {
-          // Hardware zoom not supported — digital zoom covers this
-        }
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
