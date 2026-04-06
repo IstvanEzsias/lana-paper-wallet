@@ -21,47 +21,32 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   useEffect(() => {
     hasScannedRef.current = false;
 
-    // Process width/height — we always render to this fixed size regardless
-    // of what the camera gives us. Capturing at 1080p but processing at 720p
-    // gives better sensor data (1080p→720p downscale averages pixels = less
-    // noise, sharper edges) without the CPU cost of processing at full 1080p.
-    const PW = 1280;
-    const PH = 720;
-
-    const applyPreprocessing = (imageData: ImageData): ImageData => {
-      const data = imageData.data;
-      // Contrast 1.5 (not 1.9) — less aggressive so small distant modules
-      // keep their edge detail instead of being clipped to pure black/white
-      const contrast = 1.5;
-      for (let i = 0; i < data.length; i += 4) {
-        const gray = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) | 0;
-        const val = Math.max(0, Math.min(255, (gray - 128) * contrast + 128));
-        data[i] = data[i + 1] = data[i + 2] = val;
-      }
-      return imageData;
-    };
-
-    const scanRegion = (
+    const scanFrame_inner = (
       ctx: CanvasRenderingContext2D,
       canvas: HTMLCanvasElement,
       video: HTMLVideoElement,
-      marginFraction: number
     ): ReturnType<typeof jsQR> | null => {
       const vw = video.videoWidth;
       const vh = video.videoHeight;
-      const sx = vw * marginFraction;
-      const sy = vh * marginFraction;
-      const sw = vw * (1 - 2 * marginFraction);
-      const sh = vh * (1 - 2 * marginFraction);
+      canvas.width = vw;
+      canvas.height = vh;
 
-      // Always output at fixed PW×PH — downscales 1080p to 720p automatically
-      canvas.width = PW;
-      canvas.height = PH;
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, PW, PH);
+      ctx.drawImage(video, 0, 0, vw, vh);
 
-      const imageData = applyPreprocessing(ctx.getImageData(0, 0, PW, PH));
+      const imageData = ctx.getImageData(0, 0, vw, vh);
+      const data = imageData.data;
 
-      return jsQR(imageData.data, PW, PH, {
+      // Grayscale + contrast 1.5 — enough for metal cards without
+      // destroying edge detail on small modules
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) | 0;
+        const val = Math.max(0, Math.min(255, (gray - 128) * 1.5 + 128));
+        data[i] = data[i + 1] = data[i + 2] = val;
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      return jsQR(imageData.data, vw, vh, {
         inversionAttempts: 'attemptBoth',
       });
     };
@@ -77,12 +62,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      // Try 2 zoom levels per frame — keeps mobile CPU load manageable:
-      // 0.00 = full frame       (card close / filling frame)
-      // 0.25 = center 50% → 2x (card at medium/far distance)
-      const code =
-        scanRegion(ctx, canvas, video, 0.00) ||
-        scanRegion(ctx, canvas, video, 0.25);
+      const code = scanFrame_inner(ctx, canvas, video);
 
       if (code && !hasScannedRef.current) {
         hasScannedRef.current = true;
@@ -98,8 +78,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
           },
         });
 
