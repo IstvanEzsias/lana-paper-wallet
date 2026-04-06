@@ -21,21 +21,54 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
   useEffect(() => {
     hasScannedRef.current = false;
 
-    // Applies grayscale + contrast + brightness via direct pixel manipulation.
-    // More compatible than ctx.filter which silently does nothing on some
-    // Android Chrome versions.
-    const applyPreprocessing = (imageData: ImageData): ImageData => {
-      const data = imageData.data;
-      const contrast = 1.9;  // 190%
-      const brightness = 1.1; // 110%
-      for (let i = 0; i < data.length; i += 4) {
-        // Grayscale (luminance weighted)
-        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-        // Brightness then contrast centred on 128
-        const val = Math.max(0, Math.min(255, (gray * brightness - 128) * contrast + 128));
-        data[i] = data[i + 1] = data[i + 2] = val;
-        // alpha (data[i+3]) unchanged
+    // Adaptive threshold using an integral image — O(width × height).
+    //
+    // Unlike global contrast which struggles at distance, adaptive threshold
+    // compares each pixel to its LOCAL neighbourhood average. This means:
+    // - Works at any distance (near or far)
+    // - Handles glare and shadows in different parts of the frame
+    // - Produces a clean black/white image regardless of lighting conditions
+    const applyAdaptiveThreshold = (imageData: ImageData): ImageData => {
+      const { data, width, height } = imageData;
+      const S = 12; // half-size of local neighbourhood window
+
+      // Step 1 — convert to grayscale
+      const gray = new Uint8Array(width * height);
+      for (let i = 0, j = 0; j < data.length; i++, j += 4) {
+        gray[i] = (0.299 * data[j] + 0.587 * data[j + 1] + 0.114 * data[j + 2]) | 0;
       }
+
+      // Step 2 — build integral image for O(1) local sum lookups
+      const integral = new Int32Array((width + 1) * (height + 1));
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          integral[(y + 1) * (width + 1) + (x + 1)] =
+            gray[y * width + x] +
+            integral[y * (width + 1) + (x + 1)] +
+            integral[(y + 1) * (width + 1) + x] -
+            integral[y * (width + 1) + x];
+        }
+      }
+
+      // Step 3 — threshold each pixel against its local mean
+      for (let y = 0; y < height; y++) {
+        const y1 = Math.max(0, y - S);
+        const y2 = Math.min(height - 1, y + S);
+        for (let x = 0; x < width; x++) {
+          const x1 = Math.max(0, x - S);
+          const x2 = Math.min(width - 1, x + S);
+          const count = (y2 - y1 + 1) * (x2 - x1 + 1);
+          const sum =
+            integral[(y2 + 1) * (width + 1) + (x2 + 1)] -
+            integral[y1 * (width + 1) + (x2 + 1)] -
+            integral[(y2 + 1) * (width + 1) + x1] +
+            integral[y1 * (width + 1) + x1];
+          const val = gray[y * width + x] < (sum / count) * 0.88 ? 0 : 255;
+          const j = (y * width + x) * 4;
+          data[j] = data[j + 1] = data[j + 2] = val;
+        }
+      }
+
       return imageData;
     };
 
@@ -46,7 +79,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       ctx: CanvasRenderingContext2D,
       canvas: HTMLCanvasElement,
       video: HTMLVideoElement,
-      marginFraction: number  // 0 = full frame, 0.25 = center 50% scaled 2x
+      marginFraction: number
     ): ReturnType<typeof jsQR> | null => {
       const vw = video.videoWidth;
       const vh = video.videoHeight;
@@ -55,15 +88,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
       const sw = vw * (1 - 2 * marginFraction);
       const sh = vh * (1 - 2 * marginFraction);
 
-      // Always output at full canvas size — this is the digital zoom effect
       canvas.width = vw;
       canvas.height = vh;
-
-      ctx.filter = 'none'; // reset any inherited filter
       ctx.drawImage(video, sx, sy, sw, sh, 0, 0, vw, vh);
 
-      // Apply preprocessing in pure JS — works on all browsers including Android
-      const imageData = applyPreprocessing(ctx.getImageData(0, 0, vw, vh));
+      const imageData = applyAdaptiveThreshold(ctx.getImageData(0, 0, vw, vh));
 
       return jsQR(imageData.data, imageData.width, imageData.height, {
         inversionAttempts: 'attemptBoth',
