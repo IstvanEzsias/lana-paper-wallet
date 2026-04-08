@@ -137,7 +137,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         }
       } catch (err) {
         console.error('Camera error:', err);
-        setError('Napaka pri zagonu kamere. Preverite dovoljenja.');
+        setError('Camera error. Please check your permissions.');
       }
     };
 
@@ -156,7 +156,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">Skeniraj QR kodo</h3>
+            <h3 className="text-lg font-semibold">Scan QR Code</h3>
           </div>
           <Button variant="ghost" size="icon" onClick={() => {
             if (animRef.current) cancelAnimationFrame(animRef.current);
@@ -187,7 +187,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         )}
 
         <p className="text-sm text-muted-foreground mt-4 text-center">
-          Postavite QR kodo v okvir za skeniranje
+          Place the QR code inside the frame to scan
         </p>
       </CardContent>
     </Card>
